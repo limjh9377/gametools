@@ -17,7 +17,7 @@
 const SUPABASE_URL = 'https://rkrwcvzvhlhuiqtswhdd.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrcndjdnp2aGxodWlxdHN3aGRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMjI3MzksImV4cCI6MjA4ODg5ODczOX0.OCePvmiPhwAaAnstWUSqJdMBAqwFcfbTpahBm21P5wA';
 
-let supabase = null;
+let supabaseClient = null;
 let isSupabaseConnected = false;
 let currentTab = 'schedule';
 
@@ -137,7 +137,7 @@ function initSupabase() {
     if (!window.supabase || !window.supabase.createClient) {
       throw new Error('Supabase 라이브러리 로드 실패');
     }
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     isSupabaseConnected = true;
     return true;
   } catch (e) {
@@ -229,7 +229,7 @@ function bindModalCloseEvents() {
 async function dbFetch(table, query={}) {
   if (!isSupabaseConnected) return null;
   try {
-    let q = supabase.from(table).select(query.select || '*');
+    let q = supabaseClient.from(table).select(query.select || '*');
     if (query.eq) {
       Object.entries(query.eq).forEach(([k, v]) => {
         q = q.eq(k, v);
@@ -250,7 +250,7 @@ async function dbFetch(table, query={}) {
 async function dbInsert(table, values) {
   if (!isSupabaseConnected) return null;
   try {
-    const { data, error } = await supabase.from(table).insert(values).select();
+    const { data, error } = await supabaseClient.from(table).insert(values).select();
     if (error) throw error;
     return data;
   } catch (e) {
@@ -263,7 +263,7 @@ async function dbInsert(table, values) {
 async function dbUpdate(table, match, values) {
   if (!isSupabaseConnected) return null;
   try {
-    let q = supabase.from(table).update(values);
+    let q = supabaseClient.from(table).update(values);
     Object.entries(match).forEach(([k,v]) => {
       q = q.eq(k, v);
     });
@@ -280,7 +280,7 @@ async function dbUpdate(table, match, values) {
 async function dbDelete(table, match) {
   if (!isSupabaseConnected) return false;
   try {
-    let q = supabase.from(table).delete();
+    let q = supabaseClient.from(table).delete();
     Object.entries(match).forEach(([k,v]) => {
       q = q.eq(k, v);
     });
@@ -297,7 +297,7 @@ async function dbDelete(table, match) {
 async function ensureTimeSettingsRow() {
   if (!isSupabaseConnected) return;
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('schedule_settings')
       .select('setting_key')
       .eq('setting_key', 'default')
@@ -306,7 +306,7 @@ async function ensureTimeSettingsRow() {
     if (error) throw error;
 
     if (!data) {
-      const { error: insertError } = await supabase
+      const { error: insertError } = await supabaseClient
         .from('schedule_settings')
         .insert({
           setting_key: 'default',
