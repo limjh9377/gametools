@@ -900,6 +900,44 @@ function getRoleIcon(role) {
     ? `<span class="role-icon role-support">✚</span>`
     : `<span class="role-icon role-dealer">⚔️</span>`;
 }
+  
+function hexToRgb(hex) {
+  if (!hex) return { r: 16, g: 185, b: 129 };
+
+  let c = String(hex).replace('#', '').trim();
+
+  if (c.length === 3) {
+    c = c.split('').map(v => v + v).join('');
+  }
+
+  if (c.length !== 6) {
+    return { r: 16, g: 185, b: 129 };
+  }
+
+  const num = parseInt(c, 16);
+  return {
+    r: (num >> 16) & 255,
+    g: (num >> 8) & 255,
+    b: num & 255
+  };
+}
+
+function getLuminance(hex) {
+  const { r, g, b } = hexToRgb(hex);
+  return (0.299 * r + 0.587 * g + 0.114 * b);
+}
+
+function isLightColor(hex) {
+  return getLuminance(hex) >= 170;
+}
+
+function getContrastTextColor(hex) {
+  return isLightColor(hex) ? '#111827' : '#ffffff';
+}
+
+function getContrastSubTextColor(hex) {
+  return isLightColor(hex) ? 'rgba(17,24,39,.78)' : 'rgba(255,255,255,.92)';
+}
 function getKstNow() {
   return new Date(new Date().toLocaleString('en-US', { timeZone:'Asia/Seoul' }));
 }
@@ -1209,18 +1247,22 @@ function renderSingleScheduleBoard(boardId) {
       const height = getSlotHeight(slot.start_time, slot.end_time);
       const color = raid?.color || '#10b981';
       const raidName = raid?.name || '레이드';
+      const eventTextColor = getContrastTextColor(color);
+      const eventSubTextColor = getContrastSubTextColor(color);
+      const badgeBgColor = isLightColor(color) ? 'rgba(17,24,39,.10)' : 'rgba(255,255,255,.24)';
+      const badgeTextColor = isLightColor(color) ? '#111827' : '#ffffff';
 
       html += `
         <div class="event-block ${slot.is_completed ? 'completed' : ''} ${absentCount > 0 ? 'has-absent' : ''}"
           draggable="true"
           ondragstart="onScheduleDragStart(event, '${slot.id}')"
           onclick="openScheduleDetail('${slot.id}')"
-          style="top:${top + 4}px;height:${Math.max(height - 8, 36)}px;background:linear-gradient(180deg, ${color}, ${color}dd)">
+          style="top:${top + 4}px;height:${Math.max(height - 8, 36)}px;background:linear-gradient(180deg, ${color}, ${color}dd);color:${eventTextColor}">
           <div>
-            <div style="font-size:16px;line-height:1.2">${raidName}</div>
-            <div style="font-size:12px;opacity:.92;margin-top:4px">${party.name}</div>
+            <div style="font-size:16px;line-height:1.2;color:${eventTextColor}">${raidName}</div>
+            <div style="font-size:12px;margin-top:4px;color:${eventSubTextColor}">${party.name}</div>
           </div>
-          ${absentCount > 0 ? `<div class="event-badge">Zz ${absentCount}</div>` : ''}
+          ${absentCount > 0 ? `<div class="event-badge" style="background:${badgeBgColor};color:${badgeTextColor}">Zz ${absentCount}</div>` : ''}
           ${slot.is_completed ? `<div class="complete-badge">완료됨</div>` : ''}
         </div>
       `;
@@ -1321,16 +1363,28 @@ function renderParties() {
 
     parties.forEach(party => {
       const members = getPartyMembers(party.id);
+      const headTextColor = getContrastTextColor(raid.color);
+      const headSubTextColor = getContrastSubTextColor(raid.color);
       html += `
         <div class="card party-card">
           <div class="party-card-head" style="background:linear-gradient(135deg, ${raid.color}, ${raid.color}cc)">
             <div>
-              <div class="party-card-title">${party.name}</div>
-              <div class="party-card-sub">${raid.name} · ${party.party_size || 4}인</div>
+              <div class="party-card-title" style="color:${headTextColor}">${party.name}</div>
+              <div class="party-card-sub" style="color:${headSubTextColor}">${raid.name} · ${party.party_size || 4}인</div>
             </div>
             <div style="display:flex;gap:6px">
-              <button class="btn btn-ghost btn-sm" onclick="duplicateParty('${party.id}')" style="background:rgba(255,255,255,.16);border:none;color:#fff">복제</button>
-              <button class="btn btn-ghost btn-sm" onclick="editParty('${party.id}')" style="background:rgba(255,255,255,.16);border:none;color:#fff">수정</button>
+              <button
+                class="btn btn-ghost btn-sm"
+                onclick="duplicateParty('${party.id}')"
+                style="background:${isLightColor(raid.color) ? 'rgba(255,255,255,.72)' : 'rgba(255,255,255,.16)'};border:none;color:${headTextColor}">
+                복제
+              </button>
+              <button
+                class="btn btn-ghost btn-sm"
+                onclick="editParty('${party.id}')"
+                style="background:${isLightColor(raid.color) ? 'rgba(255,255,255,.72)' : 'rgba(255,255,255,.16)'};border:none;color:${headTextColor}">
+                수정
+              </button>
               <button class="btn btn-danger btn-sm" onclick="deleteParty('${party.id}')">삭제</button>
             </div>
           </div>
