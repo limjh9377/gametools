@@ -1329,6 +1329,7 @@ function renderParties() {
               <div class="party-card-sub">${raid.name} · ${party.party_size || 4}인</div>
             </div>
             <div style="display:flex;gap:6px">
+              <button class="btn btn-ghost btn-sm" onclick="duplicateParty('${party.id}')" style="background:rgba(255,255,255,.16);border:none;color:#fff">복제</button>
               <button class="btn btn-ghost btn-sm" onclick="editParty('${party.id}')" style="background:rgba(255,255,255,.16);border:none;color:#fff">수정</button>
               <button class="btn btn-danger btn-sm" onclick="deleteParty('${party.id}')">삭제</button>
             </div>
@@ -1920,7 +1921,36 @@ async function deleteParty(id) {
   await dbDelete('parties', { id });
   await reloadAndRender();
 }
+  
+function duplicateParty(partyId) {
+  const party = getParty(partyId);
+  if (!party) return;
 
+  const members = getPartyMembers(partyId);
+
+  state.editingPartyId = null;
+  document.getElementById('partyModalTitle').textContent = '파티 복제';
+  document.getElementById('partyName').value = `${party.name} 복사본`;
+  document.getElementById('partyError').textContent = '';
+  document.getElementById('partySize').value = String(party.party_size || 4);
+
+  renderRaidOptions(party.raid_id);
+
+  createEmptyPartySlots(party.party_size || 4);
+
+  members.forEach((m, idx) => {
+    if (state.editingPartyMemberSlots[idx]) {
+      state.editingPartyMemberSlots[idx].player_id = m.player_id || '';
+      state.editingPartyMemberSlots[idx].character_id = m.character_id || '';
+    }
+  });
+
+  renderPartySlots();
+  renderQuickPick();
+  openModal('partyModal');
+}
+
+  
 function openScheduleModal(slotId = null, presetBoardId = null, presetDay = null, presetStart = null) {
   state.editingScheduleId = slotId;
   renderBoardOptions(presetBoardId || state.scheduleBoards[0]?.id || '');
