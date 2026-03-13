@@ -64,7 +64,7 @@ a{text-decoration:none;color:inherit}
 .tab-content{display:none}
 .tab-content.active{display:block}
 
-.page{max-width:1460px;margin:0 auto;padding:26px}
+.page{max-width:1520px;margin:0 auto;padding:26px}
 .page-header{margin-bottom:18px}
 .page-header h1{font-size:26px;font-weight:800;letter-spacing:-.4px}
 .page-header p{font-size:13px;color:var(--sub);margin-top:6px}
@@ -91,8 +91,25 @@ a{text-decoration:none;color:inherit}
 .btn-icon{width:30px;height:30px;border-radius:8px;background:transparent;color:var(--sub)}
 .btn-icon:hover{background:var(--surface-2)}
 
+.schedule-layout{
+  display:grid;grid-template-columns:220px 1fr;gap:18px;align-items:start
+}
+.toolbox-card{padding:14px;position:sticky;top:78px}
+.toolbox-title{font-size:15px;font-weight:800;color:var(--text);margin-bottom:12px}
+.toolbox-list{display:flex;flex-direction:column;gap:8px}
+.toolbox-link{
+  width:100%;
+  display:flex;align-items:center;justify-content:center;
+  min-height:40px;padding:9px 12px;border-radius:10px;
+  background:#fff;border:1px solid var(--line);color:var(--sub);
+  font-size:13px;font-weight:800;transition:var(--transition)
+}
+.toolbox-link:hover{background:var(--surface-2);color:var(--navy)}
+.toolbox-hint{font-size:11px;color:var(--muted);margin-top:10px;line-height:1.45}
+
+.schedule-main{display:flex;flex-direction:column;gap:18px}
 .schedule-top{
-  display:grid;grid-template-columns:1fr 430px;gap:16px;margin-bottom:18px
+  display:grid;grid-template-columns:1fr 430px;gap:16px
 }
 .schedule-title{padding:18px 20px}
 .schedule-title h2{font-size:24px;font-weight:800}
@@ -107,6 +124,17 @@ a{text-decoration:none;color:inherit}
 }
 .memo-chip .strong{font-weight:800}
 .memo-empty{color:var(--muted);font-size:12px}
+
+.schedule-board-stack{display:flex;flex-direction:column;gap:34px}
+.schedule-block{padding:16px}
+.schedule-block + .schedule-block{margin-top:6px}
+.schedule-block-head{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px
+}
+.schedule-block-title-wrap{display:flex;flex-direction:column;gap:4px}
+.schedule-block-title{font-size:18px;font-weight:800}
+.schedule-block-sub{font-size:12px;color:var(--sub)}
+.schedule-block-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 
 .toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .toolbar-left{display:flex;align-items:center;gap:10px}
@@ -133,6 +161,10 @@ a{text-decoration:none;color:inherit}
 .board-head.time-head{
   position:sticky;left:0;z-index:40;border-right:1px solid var(--line);text-align:left;padding-left:14px
 }
+.board-head.today-head{
+  background:#ecfdf5;color:#047857;border-bottom-color:#a7f3d0;
+  box-shadow:inset 0 -2px 0 #10b981;
+}
 .time-col{
   position:sticky;left:0;z-index:12;background:var(--surface-2);border-right:1px solid var(--line)
 }
@@ -154,6 +186,7 @@ a{text-decoration:none;color:inherit}
 .day-col{
   position:relative;border-left:1px dashed var(--line);background:#fff
 }
+.day-col.today-col{background:linear-gradient(180deg, rgba(16,185,129,.04), rgba(16,185,129,.02))}
 .grid-line{
   height:var(--slot-h);border-bottom:1px dashed var(--line-soft)
 }
@@ -173,11 +206,20 @@ a{text-decoration:none;color:inherit}
   box-shadow:0 8px 18px rgba(15,23,42,.12);cursor:grab;user-select:none
 }
 .event-block:active{cursor:grabbing}
+.event-block.completed{
+  background:linear-gradient(180deg, rgba(107,114,128,.95), rgba(148,163,184,.86)) !important;
+  color:#f8fafc;
+}
 .event-block.has-absent{outline:2px solid rgba(255,255,255,.8)}
 .event-badge{
   position:absolute;top:6px;right:8px;min-width:20px;height:20px;border-radius:999px;
   background:rgba(255,255,255,.24);display:flex;align-items:center;justify-content:center;
   font-size:11px;font-weight:800
+}
+.complete-badge{
+  position:absolute;left:8px;bottom:6px;
+  padding:3px 7px;border-radius:999px;background:rgba(255,255,255,.2);
+  font-size:10px;font-weight:800
 }
 
 .parties-wrap{display:flex;flex-direction:column;gap:24px}
@@ -212,6 +254,8 @@ a{text-decoration:none;color:inherit}
 .member-main{flex:1;min-width:0}
 .member-player{font-size:13px;font-weight:800}
 .member-char{font-size:12px;color:var(--sub);margin-top:2px}
+.char-name-soft{color:var(--muted)}
+.job-strong{font-weight:800;color:var(--text)}
 .level-pill{
   padding:3px 8px;border-radius:999px;font-size:11px;font-weight:800;background:#eff6ff;color:#2563eb
 }
@@ -300,14 +344,26 @@ a{text-decoration:none;color:inherit}
   display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:#fff;margin-bottom:6px;border:1px solid var(--line-soft)
 }
 .detail-member.absent{background:#fef2f2;border-color:#fecaca}
-.absent-toggle{
-  width:38px;height:22px;border-radius:999px;background:#cbd5e1;position:relative
+.absent-btn{
+  min-width:92px;height:32px;border-radius:999px;padding:0 12px;font-size:12px;font-weight:800;
+  background:#e2e8f0;color:#475569;border:none
 }
-.absent-toggle::after{
-  content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:.18s
+.absent-btn.on{background:#ef4444;color:#fff}
+.detail-status{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 10px;border-radius:999px;font-size:12px;font-weight:800
 }
-.absent-toggle.on{background:#ef4444}
-.absent-toggle.on::after{left:19px}
+.detail-status.done{background:#f1f5f9;color:#475569;border:1px solid #cbd5e1}
+.detail-status.todo{background:#ecfdf5;color:#047857;border:1px solid #a7f3d0}
+
+.complete-list{display:flex;flex-direction:column;gap:8px}
+.complete-item{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:#f8fafc;border:1px solid var(--line)
+}
+.complete-item input{width:16px;height:16px}
+.complete-item-main{flex:1}
+.complete-item-title{font-size:13px;font-weight:800}
+.complete-item-sub{font-size:12px;color:var(--sub);margin-top:3px}
 
 .toast-wrap{position:fixed;right:20px;bottom:20px;z-index:2000;display:flex;flex-direction:column;gap:8px}
 .toast{
@@ -319,6 +375,10 @@ a{text-decoration:none;color:inherit}
 
 .hidden{display:none !important}
 
+@media (max-width: 1280px){
+  .schedule-layout{grid-template-columns:1fr}
+  .toolbox-card{position:relative;top:auto}
+}
 @media (max-width: 1100px){
   .schedule-top{grid-template-columns:1fr}
 }
@@ -342,33 +402,36 @@ a{text-decoration:none;color:inherit}
 <!-- 스케줄 -->
 <section class="tab-content active" id="content-schedule">
   <div class="page">
-    <div class="schedule-top">
-      <div class="card schedule-title">
-        <h2>주간 스케줄</h2>
-        <p>파티별 레이드 일정을 관리하세요</p>
-      </div>
+    <div class="schedule-layout">
+      <aside class="card toolbox-card">
+        <div class="toolbox-title">도구함</div>
+        <div class="toolbox-list" id="toolboxList"></div>
+        <div class="toolbox-hint">링크 URL은 코드의 toolLinks 배열이나 DB 설정값에서 나중에 계속 추가할 수 있어요.</div>
+      </aside>
 
-      <div class="card memo-box">
-        <div class="memo-header">
-          <div class="memo-title">참고 메모 <span id="memoCount" style="font-weight:500;color:var(--muted)">(0)</span></div>
-          <button class="btn btn-orange btn-sm" onclick="openMemoModal()">+ 추가</button>
+      <div class="schedule-main">
+        <div class="schedule-top">
+          <div class="card schedule-title">
+            <h2>주간 스케줄</h2>
+            <p>파티별 레이드 일정을 관리하세요</p>
+          </div>
+
+          <div class="card memo-box">
+            <div class="memo-header">
+              <div class="memo-title">참고 메모 <span id="memoCount" style="font-weight:500;color:var(--muted)">(0)</span></div>
+              <button class="btn btn-orange btn-sm" onclick="openMemoModal()">+ 추가</button>
+            </div>
+            <div class="memo-list" id="memoList"></div>
+          </div>
         </div>
-        <div class="memo-list" id="memoList"></div>
-      </div>
-    </div>
 
-    <div class="toolbar">
-      <div class="toolbar-left">
-        <div class="toolbar-title">이번 주 일정</div>
-        <button class="time-edit-btn" id="timeEditBtn" onclick="toggleTimeEdit()">시간 수정</button>
-      </div>
-      <div class="inline-actions">
-        <button class="btn btn-primary" onclick="openScheduleModal()">+ 스케줄 추가</button>
-      </div>
-    </div>
+        <div class="row">
+          <div style="font-size:15px;font-weight:800;color:var(--sub)">스케줄표 관리</div>
+          <button class="btn btn-blue" onclick="addScheduleBoard()">+ 스케줄표 추가하기</button>
+        </div>
 
-    <div class="schedule-shell">
-      <div class="schedule-board" id="scheduleBoard"></div>
+        <div class="schedule-board-stack" id="scheduleBoardsWrap"></div>
+      </div>
     </div>
   </div>
 </section>
@@ -623,6 +686,10 @@ a{text-decoration:none;color:inherit}
     </div>
     <div class="modal-body">
       <div class="form-group">
+        <label>스케줄표 *</label>
+        <select class="form-control" id="schedBoard"></select>
+      </div>
+      <div class="form-group">
         <label>파티 *</label>
         <select class="form-control" id="schedParty"></select>
       </div>
@@ -666,8 +733,8 @@ a{text-decoration:none;color:inherit}
     </div>
     <div class="modal-body" id="detailBody"></div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="editScheduleFromDetail()">일정 수정</button>
       <button class="btn btn-danger" onclick="deleteScheduleFromDetail()">일정 삭제</button>
+      <button class="btn btn-primary" onclick="editScheduleFromDetail()">일정 수정</button>
     </div>
   </div>
 </div>
@@ -697,11 +764,36 @@ a{text-decoration:none;color:inherit}
   </div>
 </div>
 
+<!-- 완료 설정 모달 -->
+<div class="modal-overlay" id="completeModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="completeModalTitle">완료한 레이드 설정</div>
+      <button class="close-btn" onclick="closeModal('completeModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="complete-list" id="completeList"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('completeModal')">취소</button>
+      <button class="btn btn-primary" onclick="saveCompletedSchedules()">저장</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toastWrap"></div>
 
 <script>
 const SUPABASE_URL = 'https://rkrwcvzvhlhuiqtswhdd.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrcndjdnp2aGxodWlxdHN3aGRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMjI3MzksImV4cCI6MjA4ODg5ODczOX0.OCePvmiPhwAaAnstWUSqJdMBAqwFcfbTpahBm21P5wA';
+
+const DEFAULT_TOOL_LINKS = [
+  { id:'tool-1', label:'로스트아크 홈페이지', url:'' },
+  { id:'tool-2', label:'인벤 바로가기', url:'' },
+  { id:'tool-3', label:'로아와 바로가기', url:'' },
+  { id:'tool-4', label:'로펙 바로가기', url:'' },
+  { id:'tool-5', label:'경매 계산하기', url:'' }
+];
 
 let supabaseClient = null;
 let isSupabaseConnected = false;
@@ -722,6 +814,8 @@ let state = {
   attendance: [],
   weeklyNotes: [],
   timeSlots: [],
+  scheduleBoards: [],
+  toolLinks: [],
   timeEditMode: false,
 
   editingPlayerId: null,
@@ -731,6 +825,7 @@ let state = {
   editingPartyId: null,
   editingScheduleId: null,
   currentDetailSlotId: null,
+  currentCompleteBoardId: null,
 
   currentCharPlayerId: null,
   editingPartyMemberSlots: []
@@ -750,6 +845,10 @@ function generateDefaultTimeSlots() {
   return slots;
 }
 
+function getDefaultBoards() {
+  return [{ id:'board-1', title:'이번 주 스케줄' }];
+}
+
 function resetState() {
   state.players = [];
   state.jobs = [];
@@ -761,6 +860,8 @@ function resetState() {
   state.attendance = [];
   state.weeklyNotes = [];
   state.timeSlots = generateDefaultTimeSlots();
+  state.scheduleBoards = getDefaultBoards();
+  state.toolLinks = [...DEFAULT_TOOL_LINKS];
   state.timeEditMode = false;
 
   state.editingPlayerId = null;
@@ -770,6 +871,7 @@ function resetState() {
   state.editingPartyId = null;
   state.editingScheduleId = null;
   state.currentDetailSlotId = null;
+  state.currentCompleteBoardId = null;
 
   state.currentCharPlayerId = null;
   state.editingPartyMemberSlots = [];
@@ -810,11 +912,9 @@ function getJob(id){ return state.jobs.find(v => v.id === id); }
 function getCharacter(id){ return state.characters.find(v => v.id === id); }
 function getRaid(id){ return state.raids.find(v => v.id === id); }
 function getParty(id){ return state.parties.find(v => v.id === id); }
+function getBoard(id){ return state.scheduleBoards.find(v => v.id === id); }
 function getPartyMembers(partyId){
   return state.partyMembers.filter(v => v.party_id === partyId).sort((a,b)=>a.slot_order-b.slot_order);
-}
-function getRaidColor(raidId){
-  return getRaid(raidId)?.color || '#10b981';
 }
 function isNoonLine(time) {
   return normalizeTime(time) === '12:00';
@@ -828,6 +928,13 @@ function hexToRgba(hex, alpha = 1) {
   const g = (n >> 8) & 255;
   const b = n & 255;
   return `rgba(${r},${g},${b},${alpha})`;
+}
+function getKstNow() {
+  return new Date(new Date().toLocaleString('en-US', { timeZone:'Asia/Seoul' }));
+}
+function getCurrentKstDay() {
+  const jsDay = getKstNow().getDay(); // 0 Sunday
+  return jsDay === 0 ? 7 : jsDay;
 }
 
 function showToast(msg, type='success') {
@@ -949,7 +1056,9 @@ async function ensureSettingsRow() {
   if (!row || row.length === 0) {
     await dbInsert('schedule_settings', {
       setting_key:'default',
-      time_slots: generateDefaultTimeSlots()
+      time_slots: generateDefaultTimeSlots(),
+      board_configs: getDefaultBoards(),
+      tool_links: DEFAULT_TOOL_LINKS
     });
   }
 }
@@ -1016,11 +1125,16 @@ function loadDemoData() {
     {id:'m12',party_id:'pc',player_id:p4,character_id:'c8',slot_order:4}
   ];
 
+  state.scheduleBoards = [
+    { id:'board-1', title:'이번 주 스케줄' },
+    { id:'board-2', title:'다음 주 스케줄' }
+  ];
+
   state.scheduleSlots = [
-    {id:'s1',party_id:'pa',day_of_week:4,start_time:'17:00:00',end_time:'19:00:00'},
-    {id:'s2',party_id:'pa',day_of_week:3,start_time:'21:00:00',end_time:'23:00:00'},
-    {id:'s3',party_id:'pb',day_of_week:4,start_time:'21:00:00',end_time:'23:00:00'},
-    {id:'s4',party_id:'pc',day_of_week:6,start_time:'20:00:00',end_time:'22:00:00'}
+    {id:'s1',board_id:'board-1',party_id:'pa',day_of_week:4,start_time:'17:00:00',end_time:'19:00:00',is_completed:false},
+    {id:'s2',board_id:'board-1',party_id:'pa',day_of_week:3,start_time:'21:00:00',end_time:'23:00:00',is_completed:true},
+    {id:'s3',board_id:'board-1',party_id:'pb',day_of_week:4,start_time:'21:00:00',end_time:'23:00:00',is_completed:false},
+    {id:'s4',board_id:'board-2',party_id:'pc',day_of_week:6,start_time:'20:00:00',end_time:'22:00:00',is_completed:false}
   ];
 
   state.weeklyNotes = [
@@ -1028,6 +1142,7 @@ function loadDemoData() {
     {id:'n2',player_id:p2,note:'일요일 9시 이후 불가',week_label:'이번 주'}
   ];
 
+  state.toolLinks = [...DEFAULT_TOOL_LINKS];
   state.timeSlots = generateDefaultTimeSlots();
 }
 
@@ -1063,12 +1178,25 @@ async function loadAllData() {
   state.raids = raids || [];
   state.parties = parties || [];
   state.partyMembers = partyMembers || [];
-  state.scheduleSlots = scheduleSlots || [];
+  state.scheduleSlots = (scheduleSlots || []).map(v => ({
+    ...v,
+    board_id: v.board_id || 'board-1',
+    is_completed: !!v.is_completed
+  }));
   state.attendance = attendance || [];
   state.weeklyNotes = notes || [];
-  state.timeSlots = settings?.[0]?.time_slots || generateDefaultTimeSlots();
+
+  const settingsRow = settings?.[0] || {};
+  state.timeSlots = settingsRow.time_slots || generateDefaultTimeSlots();
+  state.scheduleBoards = (settingsRow.board_configs && settingsRow.board_configs.length)
+    ? settingsRow.board_configs
+    : getDefaultBoards();
+  state.toolLinks = (settingsRow.tool_links && settingsRow.tool_links.length)
+    ? settingsRow.tool_links
+    : [...DEFAULT_TOOL_LINKS];
 
   if (!state.timeSlots.length) state.timeSlots = generateDefaultTimeSlots();
+  if (!state.scheduleBoards.length) state.scheduleBoards = getDefaultBoards();
 }
 
 async function reloadAndRender() {
@@ -1077,14 +1205,30 @@ async function reloadAndRender() {
 }
 
 function renderAll() {
+  renderToolbox();
   renderMemos();
-  renderScheduleBoard();
+  renderScheduleBoards();
   renderRaidFilterChips();
   renderParties();
   renderCharacters();
   renderSettingsPlayers();
   renderRaids();
   renderJobs();
+}
+
+function renderToolbox() {
+  const wrap = document.getElementById('toolboxList');
+  if (!wrap) return;
+
+  wrap.innerHTML = state.toolLinks.map(link => {
+    const href = link.url && String(link.url).trim() ? link.url : '#';
+    const blank = href !== '#' ? `target="_blank" rel="noopener noreferrer"` : '';
+    return `
+      <a class="toolbox-link" href="${href}" ${blank} onclick="${href === '#' ? `event.preventDefault();showToast('링크 주소를 먼저 입력해주세요.','info')` : ''}">
+        ${link.label}
+      </a>
+    `;
+  }).join('');
 }
 
 function renderMemos() {
@@ -1125,27 +1269,71 @@ function getSlotTop(time) {
 function getSlotHeight(startTime, endTime) {
   return getDurationSlots(startTime, endTime) * SLOT_HEIGHT;
 }
-function buildHitAreas(day) {
+function buildHitAreas(day, boardId) {
   const sorted = getSortedTimeSlots();
   return sorted.map((time, idx) => `
     <div class="slot-hit"
       style="top:${idx * SLOT_HEIGHT}px"
       ondragover="onScheduleDragOver(event)"
       ondragleave="onScheduleDragLeave(event)"
-      ondrop="onScheduleDrop(event, ${day}, '${time}')"
-      onclick="quickAddSchedule(${day}, '${time}')"
+      ondrop="onScheduleDrop(event, '${boardId}', ${day}, '${time}')"
+      onclick="quickAddSchedule('${boardId}', ${day}, '${time}')"
     ></div>
   `).join('');
 }
-function renderScheduleBoard() {
-  const board = document.getElementById('scheduleBoard');
+
+function renderScheduleBoards() {
+  const wrap = document.getElementById('scheduleBoardsWrap');
+  if (!wrap) return;
+
+  if (!state.scheduleBoards.length) {
+    wrap.innerHTML = `<div class="card" style="padding:24px;color:var(--muted)">스케줄표가 없습니다.</div>`;
+    return;
+  }
+
+  wrap.innerHTML = state.scheduleBoards.map(board => {
+    const slotCount = state.scheduleSlots.filter(v => (v.board_id || 'board-1') === board.id).length;
+    return `
+      <div class="card schedule-block">
+        <div class="schedule-block-head">
+          <div class="schedule-block-title-wrap">
+            <div class="schedule-block-title">${board.title}</div>
+            <div class="schedule-block-sub">등록 일정 ${slotCount}개</div>
+          </div>
+          <div class="schedule-block-actions">
+            <button class="time-edit-btn" onclick="openCompleteModal('${board.id}')">완료한 레이드 설정</button>
+            <button class="btn btn-primary btn-sm" onclick="openScheduleModal(null, '${board.id}')">+ 스케줄 추가</button>
+            ${state.scheduleBoards.length > 1 ? `<button class="btn btn-danger btn-sm" onclick="deleteScheduleBoard('${board.id}')">스케줄표 삭제</button>` : ''}
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <div class="toolbar-title">시간표</div>
+            <button class="time-edit-btn ${state.timeEditMode ? 'active' : ''}" id="timeEditBtn-${board.id}" onclick="toggleTimeEdit()">
+              ${state.timeEditMode ? '시간 수정 종료' : '시간 수정'}
+            </button>
+          </div>
+          <div class="inline-actions"></div>
+        </div>
+
+        <div class="schedule-shell">
+          <div class="schedule-board" id="scheduleBoard-${board.id}">${renderSingleScheduleBoard(board.id)}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderSingleScheduleBoard(boardId) {
   const sorted = getSortedTimeSlots();
   const totalHeight = sorted.length * SLOT_HEIGHT;
+  const today = getCurrentKstDay();
 
   let html = '';
   html += `<div class="board-head time-head">시간</div>`;
   for (let day = 1; day <= 7; day++) {
-    html += `<div class="board-head">${DAY_NAMES[day]}</div>`;
+    html += `<div class="board-head ${today === day ? 'today-head' : ''}">${DAY_NAMES[day]}</div>`;
   }
 
   html += `<div class="time-col ${state.timeEditMode ? 'time-edit-on' : ''}">`;
@@ -1165,12 +1353,11 @@ function renderScheduleBoard() {
   html += `</div>`;
 
   for (let day = 1; day <= 7; day++) {
-    const daySlots = state.scheduleSlots.filter(s => s.day_of_week === day);
-    html += `<div class="day-col" style="height:${totalHeight}px">`;
+    const daySlots = state.scheduleSlots.filter(s => (s.board_id || 'board-1') === boardId && s.day_of_week === day);
+    html += `<div class="day-col ${today === day ? 'today-col' : ''}" style="height:${totalHeight}px">`;
 
     html += sorted.map(time => `<div class="grid-line ${isNoonLine(time) ? 'noon' : ''}"></div>`).join('');
-
-    html += `<div class="day-drop-guide">${buildHitAreas(day)}</div>`;
+    html += `<div class="day-drop-guide">${buildHitAreas(day, boardId)}</div>`;
 
     daySlots.forEach(slot => {
       const party = getParty(slot.party_id);
@@ -1187,10 +1374,9 @@ function renderScheduleBoard() {
       const height = getSlotHeight(slot.start_time, slot.end_time);
       const color = raid?.color || '#10b981';
       const raidName = raid?.name || '레이드';
-      const timeText = `${normalizeTime(slot.start_time)} ~ ${normalizeTime(slot.end_time)}`;
 
       html += `
-        <div class="event-block ${absentCount > 0 ? 'has-absent' : ''}"
+        <div class="event-block ${absentCount > 0 ? 'has-absent' : ''} ${slot.is_completed ? 'completed' : ''}"
           draggable="true"
           ondragstart="onScheduleDragStart(event, '${slot.id}')"
           onclick="openScheduleDetail('${slot.id}')"
@@ -1199,13 +1385,14 @@ function renderScheduleBoard() {
             height:${Math.max(height - 8, 36)}px;
             background:linear-gradient(180deg, ${hexToRgba(color,.96)}, ${hexToRgba(color,.82)});
           "
-          title="${party.name} / ${raidName} / ${timeText}"
+          title="${raidName} / ${party.name}"
         >
           <div>
-            <div style="font-size:15px;line-height:1.2">${party.name}</div>
-            <div style="font-size:11px;opacity:.92;margin-top:4px">${raidName} · ${timeText}</div>
+            <div style="font-size:15px;line-height:1.2">${raidName}</div>
+            <div style="font-size:11px;opacity:.92;margin-top:4px">${party.name}</div>
           </div>
-          ${absentCount > 0 ? `<div class="event-badge">${absentCount}</div>` : ''}
+          ${absentCount > 0 ? `<div class="event-badge">Zz ${absentCount}</div>` : ''}
+          ${slot.is_completed ? `<div class="complete-badge">완료됨</div>` : ''}
         </div>
       `;
     });
@@ -1213,7 +1400,55 @@ function renderScheduleBoard() {
     html += `</div>`;
   }
 
-  board.innerHTML = html;
+  return html;
+}
+
+async function addScheduleBoard() {
+  const nextNo = state.scheduleBoards.length + 1;
+  const name = prompt('새 스케줄표 이름을 입력해주세요.', `스케줄표 ${nextNo}`);
+  if (name === null) return;
+
+  const title = String(name).trim() || `스케줄표 ${nextNo}`;
+  const newBoard = { id: uid(), title };
+
+  state.scheduleBoards.push(newBoard);
+  await persistBoardConfigs();
+  renderScheduleBoards();
+  showToast('스케줄표가 추가되었습니다.');
+}
+
+async function deleteScheduleBoard(boardId) {
+  const board = getBoard(boardId);
+  if (!board) return;
+  if (!confirm(`"${board.title}" 스케줄표를 통째로 삭제할까요?`)) return;
+
+  const targetSlots = state.scheduleSlots.filter(v => (v.board_id || 'board-1') === boardId);
+
+  if (isSupabaseConnected) {
+    for (const slot of targetSlots) {
+      const attends = state.attendance.filter(v => v.schedule_slot_id === slot.id);
+      for (const a of attends) await dbDelete('attendance', { id: a.id });
+      await dbDelete('schedule_slots', { id: slot.id });
+    }
+  } else {
+    const targetIds = new Set(targetSlots.map(v => v.id));
+    state.attendance = state.attendance.filter(v => !targetIds.has(v.schedule_slot_id));
+    state.scheduleSlots = state.scheduleSlots.filter(v => (v.board_id || 'board-1') !== boardId);
+  }
+
+  state.scheduleBoards = state.scheduleBoards.filter(v => v.id !== boardId);
+  await persistBoardConfigs();
+  showToast('스케줄표가 삭제되었습니다.');
+  await reloadAndRender();
+}
+
+async function persistBoardConfigs() {
+  if (isSupabaseConnected) {
+    await dbUpdate('schedule_settings', { setting_key: 'default' }, {
+      board_configs: state.scheduleBoards,
+      tool_links: state.toolLinks
+    });
+  }
 }
 
 function renderRaidFilterChips() {
@@ -1320,7 +1555,10 @@ function renderParties() {
                     <div class="member-no" style="background:${raid.color}">${idx + 1}</div>
                     <div class="member-main">
                       <div class="member-player">${player?.name || '플레이어 없음'}</div>
-                      <div class="member-char">${ch?.name || '캐릭터 없음'}${job ? ` · ${job.name}` : ''}</div>
+                      <div class="member-char">
+                        <span class="char-name-soft">${ch?.name || '캐릭터 없음'}</span>
+                        ${job ? ` · <span class="job-strong">${job.name}</span>` : ''}
+                      </div>
                     </div>
                     <div class="level-pill ${levelWarn ? 'warn' : ''}">${ch?.level ?? '-'}</div>
                   </div>
@@ -1371,9 +1609,11 @@ function renderCharacters() {
           const job = getJob(ch.job_id);
           return `
             <div class="char-row">
-              <div>
-                <div class="char-name">${ch.name}</div>
-                <div class="char-sub">${job?.name || '직업 미지정'} · Lv.${ch.level ?? '-'}</div>
+              <div class="char-name">
+                <div style="font-size:13px;font-weight:700;color:var(--muted)">${ch.name}</div>
+                <div class="char-sub">
+                  ${job ? `<span class="job-strong">${job.name}</span>` : '직업 미지정'} · Lv.${ch.level ?? '-'}
+                </div>
               </div>
               <button class="btn-icon" onclick="editChar('${ch.id}')">✎</button>
               <button class="btn-icon" onclick="deleteChar('${ch.id}')" style="color:#ef4444">🗑</button>
@@ -1513,6 +1753,15 @@ function renderRaidOptions(selectedId = '') {
     <option value="${raid.id}" ${selectedId === raid.id ? 'selected' : ''}>${raid.icon || '🎯'} ${raid.name}</option>
   `).join('');
 }
+
+function renderBoardOptions(selectedId = '') {
+  const select = document.getElementById('schedBoard');
+  if (!select) return;
+  select.innerHTML = state.scheduleBoards.map(board => `
+    <option value="${board.id}" ${selectedId === board.id ? 'selected' : ''}>${board.title}</option>
+  `).join('');
+}
+
 function renderSchedPartyOptions(selectedId = '') {
   const select = document.getElementById('schedParty');
   if (!select) return;
@@ -2060,15 +2309,17 @@ async function deleteParty(id) {
   await reloadAndRender();
 }
 
-function openScheduleModal(slotId = null, presetDay = null, presetStart = null) {
+function openScheduleModal(slotId = null, presetBoardId = null, presetDay = null, presetStart = null) {
   state.editingScheduleId = slotId;
 
+  renderBoardOptions(presetBoardId || state.scheduleBoards[0]?.id || '');
   renderSchedPartyOptions('');
 
   if (slotId) {
     const slot = state.scheduleSlots.find(v => v.id === slotId);
     if (!slot) return;
     document.getElementById('scheduleModalTitle').textContent = '스케줄 수정';
+    renderBoardOptions(slot.board_id || 'board-1');
     renderSchedPartyOptions(slot.party_id);
     document.getElementById('schedDay').value = slot.day_of_week;
     document.getElementById('schedStart').value = normalizeTime(slot.start_time);
@@ -2084,10 +2335,11 @@ function openScheduleModal(slotId = null, presetDay = null, presetStart = null) 
   document.getElementById('scheduleError').textContent = '';
   openModal('scheduleModal');
 }
-function quickAddSchedule(day, time) {
-  openScheduleModal(null, day, normalizeTime(time));
+function quickAddSchedule(boardId, day, time) {
+  openScheduleModal(null, boardId, day, normalizeTime(time));
 }
 async function saveSchedule() {
+  const boardId = document.getElementById('schedBoard').value;
   const partyId = document.getElementById('schedParty').value;
   const day = Number(document.getElementById('schedDay').value);
   const start = normalizeTime(document.getElementById('schedStart').value);
@@ -2095,6 +2347,10 @@ async function saveSchedule() {
   const errorEl = document.getElementById('scheduleError');
   errorEl.textContent = '';
 
+  if (!boardId) {
+    errorEl.textContent = '스케줄표를 선택해주세요.';
+    return;
+  }
   if (!partyId) {
     errorEl.textContent = '파티를 선택해주세요.';
     return;
@@ -2109,6 +2365,7 @@ async function saveSchedule() {
   }
 
   const payload = {
+    board_id: boardId,
     party_id: partyId,
     day_of_week: day,
     start_time: start,
@@ -2125,9 +2382,9 @@ async function saveSchedule() {
     showToast('스케줄이 수정되었습니다.');
   } else {
     if (isSupabaseConnected) {
-      await dbInsert('schedule_slots', payload);
+      await dbInsert('schedule_slots', { ...payload, is_completed:false });
     } else {
-      state.scheduleSlots.push({ id: uid(), ...payload });
+      state.scheduleSlots.push({ id: uid(), ...payload, is_completed:false });
     }
     showToast('스케줄이 추가되었습니다.');
   }
@@ -2143,34 +2400,49 @@ function openScheduleDetail(slotId) {
   const party = getParty(slot.party_id);
   const raid = party ? getRaid(party.raid_id) : null;
   const members = party ? getPartyMembers(party.id) : [];
+  const board = getBoard(slot.board_id || 'board-1');
 
-  document.getElementById('detailTitle').textContent = `${party?.name || '상세'} 상세`;
+  document.getElementById('detailTitle').textContent = `${raid?.name || '상세'} 상세`;
 
   const body = document.getElementById('detailBody');
   body.innerHTML = `
     <div class="detail-box">
-      <div style="font-size:16px;font-weight:800">${party?.name || '-'}</div>
-      <div style="font-size:12px;color:var(--sub);margin-top:6px">
-        ${raid?.icon || '🎯'} ${raid?.name || '레이드 없음'} · ${DAY_NAMES[slot.day_of_week]}
-      </div>
-      <div style="font-size:12px;color:var(--sub);margin-top:4px">
-        ${normalizeTime(slot.start_time)} ~ ${normalizeTime(slot.end_time)}
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <div>
+          <div style="font-size:16px;font-weight:800">${raid?.name || '-'}</div>
+          <div style="font-size:12px;color:var(--sub);margin-top:6px">
+            ${party?.name || '파티 없음'} · ${board?.title || '스케줄표'}
+          </div>
+          <div style="font-size:12px;color:var(--sub);margin-top:4px">
+            ${DAY_NAMES[slot.day_of_week]} · ${normalizeTime(slot.start_time)} ~ ${normalizeTime(slot.end_time)}
+          </div>
+        </div>
+        <div class="detail-status ${slot.is_completed ? 'done' : 'todo'}">
+          ${slot.is_completed ? '완료됨' : '진행 전'}
+        </div>
       </div>
     </div>
 
-    <div style="font-size:13px;font-weight:800;margin-bottom:10px">파티원 출석</div>
+    <div style="font-size:13px;font-weight:800;margin-bottom:10px">파티원 자리비움 체크</div>
     ${members.map(m => {
       const player = getPlayer(m.player_id);
       const ch = getCharacter(m.character_id);
+      const job = ch ? getJob(ch.job_id) : null;
       const att = state.attendance.find(v => v.schedule_slot_id === slot.id && v.player_id === m.player_id);
       const absent = !!att?.is_absent;
       return `
         <div class="detail-member ${absent ? 'absent' : ''}">
           <div style="flex:1">
             <div style="font-size:13px;font-weight:800">${player?.name || '-'}</div>
-            <div style="font-size:12px;color:var(--sub);margin-top:3px">${ch?.name || '-'} · Lv.${ch?.level ?? '-'}</div>
+            <div style="font-size:12px;color:var(--sub);margin-top:3px">
+              <span class="char-name-soft">${ch?.name || '-'}</span>
+              ${job ? ` · <span class="job-strong">${job.name}</span>` : ''}
+              · Lv.${ch?.level ?? '-'}
+            </div>
           </div>
-          <button class="absent-toggle ${absent ? 'on' : ''}" onclick="toggleAttendance('${slot.id}','${m.player_id}', ${absent ? 'false' : 'true'})"></button>
+          <button class="absent-btn ${absent ? 'on' : ''}" onclick="toggleAttendance('${slot.id}','${m.player_id}', ${absent ? 'false' : 'true'})">
+            ${absent ? '자리비움 해제' : '자리비움'}
+          </button>
         </div>
       `;
     }).join('')}
@@ -2232,6 +2504,70 @@ async function toggleAttendance(slotId, playerId, isAbsent) {
   openScheduleDetail(slotId);
 }
 
+function openCompleteModal(boardId) {
+  state.currentCompleteBoardId = boardId;
+  const board = getBoard(boardId);
+  document.getElementById('completeModalTitle').textContent = `${board?.title || '스케줄표'} 완료한 레이드 설정`;
+  renderCompleteList();
+  openModal('completeModal');
+}
+
+function renderCompleteList() {
+  const wrap = document.getElementById('completeList');
+  const boardId = state.currentCompleteBoardId;
+  if (!wrap || !boardId) return;
+
+  const slots = [...state.scheduleSlots]
+    .filter(v => (v.board_id || 'board-1') === boardId)
+    .sort((a,b) => {
+      if (a.day_of_week !== b.day_of_week) return a.day_of_week - b.day_of_week;
+      return getAdjustedMinutes(normalizeTime(a.start_time)) - getAdjustedMinutes(normalizeTime(b.start_time));
+    });
+
+  if (!slots.length) {
+    wrap.innerHTML = `<div style="color:var(--muted);font-size:13px">이 스케줄표에는 일정이 없습니다.</div>`;
+    return;
+  }
+
+  wrap.innerHTML = slots.map(slot => {
+    const party = getParty(slot.party_id);
+    const raid = party ? getRaid(party.raid_id) : null;
+    return `
+      <label class="complete-item">
+        <input type="checkbox" class="complete-check" value="${slot.id}" ${slot.is_completed ? 'checked' : ''}>
+        <div class="complete-item-main">
+          <div class="complete-item-title">${raid?.name || '레이드 없음'} · ${party?.name || '파티 없음'}</div>
+          <div class="complete-item-sub">${DAY_NAMES[slot.day_of_week]} · ${normalizeTime(slot.start_time)} ~ ${normalizeTime(slot.end_time)}</div>
+        </div>
+      </label>
+    `;
+  }).join('');
+}
+
+async function saveCompletedSchedules() {
+  const checks = [...document.querySelectorAll('.complete-check')];
+  const checkedSet = new Set(checks.filter(v => v.checked).map(v => v.value));
+  const boardId = state.currentCompleteBoardId;
+
+  const targetSlots = state.scheduleSlots.filter(v => (v.board_id || 'board-1') === boardId);
+
+  if (isSupabaseConnected) {
+    for (const slot of targetSlots) {
+      await dbUpdate('schedule_slots', { id: slot.id }, {
+        is_completed: checkedSet.has(slot.id)
+      });
+    }
+  } else {
+    targetSlots.forEach(slot => {
+      slot.is_completed = checkedSet.has(slot.id);
+    });
+  }
+
+  closeModal('completeModal');
+  showToast('완료 상태가 저장되었습니다.');
+  await reloadAndRender();
+}
+
 function openMemoModal() {
   document.getElementById('memoText').value = '';
   document.getElementById('memoError').textContent = '';
@@ -2287,14 +2623,15 @@ async function deleteMemo(id) {
 
 function toggleTimeEdit() {
   state.timeEditMode = !state.timeEditMode;
-  const btn = document.getElementById('timeEditBtn');
-  btn.classList.toggle('active', state.timeEditMode);
-  btn.textContent = state.timeEditMode ? '시간 수정 종료' : '시간 수정';
-  renderScheduleBoard();
+  renderScheduleBoards();
 }
 async function persistTimeSlots() {
   if (isSupabaseConnected) {
-    await dbUpdate('schedule_settings', { setting_key: 'default' }, { time_slots: state.timeSlots });
+    await dbUpdate('schedule_settings', { setting_key: 'default' }, {
+      time_slots: state.timeSlots,
+      board_configs: state.scheduleBoards,
+      tool_links: state.toolLinks
+    });
   }
 }
 async function addTimeSlotBefore(time) {
@@ -2309,7 +2646,7 @@ async function addTimeSlotBefore(time) {
 
   state.timeSlots.push(newTime);
   await persistTimeSlots();
-  renderScheduleBoard();
+  renderScheduleBoards();
   showToast(`${newTime} 슬롯이 추가되었습니다.`);
 }
 async function removeTimeSlot(time) {
@@ -2332,7 +2669,7 @@ async function removeTimeSlot(time) {
 
   state.timeSlots = state.timeSlots.filter(v => normalizeTime(v) !== normalized);
   await persistTimeSlots();
-  renderScheduleBoard();
+  renderScheduleBoards();
   showToast(`${normalized} 슬롯이 삭제되었습니다.`);
 }
 
@@ -2351,7 +2688,7 @@ function onScheduleDragOver(e) {
 function onScheduleDragLeave(e) {
   e.currentTarget.classList.remove('drag-over');
 }
-async function onScheduleDrop(e, day, startTime) {
+async function onScheduleDrop(e, boardId, day, startTime) {
   e.preventDefault();
   e.currentTarget.classList.remove('drag-over');
 
@@ -2371,11 +2708,13 @@ async function onScheduleDrop(e, day, startTime) {
 
   if (isSupabaseConnected) {
     await dbUpdate('schedule_slots', { id: slotId }, {
+      board_id: boardId,
       day_of_week: day,
       start_time: newStart,
       end_time: newEnd
     });
   } else {
+    slot.board_id = boardId;
     slot.day_of_week = day;
     slot.start_time = newStart;
     slot.end_time = newEnd;
@@ -2404,6 +2743,7 @@ async function bootstrap() {
   renderAll();
   renderJobSelectOptions();
   renderRaidOptions();
+  renderBoardOptions();
   renderSchedPartyOptions();
   renderMemoPlayerOptions();
 
