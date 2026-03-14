@@ -142,11 +142,6 @@ a{text-decoration:none;color:inherit}
   justify-self:center;
 }
 
-.schedule-top-right{
-  padding-left:28px;
-  min-width:0;
-}
-
 .memo-header{
   display:flex;
   align-items:center;
@@ -848,9 +843,15 @@ a{text-decoration:none;color:inherit}
         <label>스케줄표 *</label>
         <select class="form-control" id="schedBoard"></select>
       </div>
-      <div class="form-group">
-        <label>파티 *</label>
-        <select class="form-control" id="schedParty"></select>
+      <div class="form-row">
+        <div class="form-group">
+          <label>레이드 *</label>
+          <select class="form-control" id="schedRaid" onchange="onScheduleRaidChange()"></select>
+        </div>
+        <div class="form-group">
+          <label>파티 *</label>
+          <select class="form-control" id="schedParty"></select>
+        </div>
       </div>
       <div class="form-group">
         <label>요일 *</label>
@@ -1840,13 +1841,42 @@ function renderBoardOptions(selectedId = '') {
   const select = document.getElementById('schedBoard');
   select.innerHTML = state.scheduleBoards.map(board => `<option value="${board.id}" ${selectedId === board.id ? 'selected' : ''}>${board.title}</option>`).join('');
 }
-function renderSchedPartyOptions(selectedId = '') {
+function renderSchedPartyOptions(selectedId = '', raidId = '') {
   const select = document.getElementById('schedParty');
-  const parties = [...state.parties].sort((a,b)=>(a.name || '').localeCompare(b.name || ''));
-  select.innerHTML = `<option value="">파티 선택</option>` + parties.map(p => {
-    const raid = getRaid(p.raid_id);
-    return `<option value="${p.id}" ${selectedId === p.id ? 'selected' : ''}>${p.name}${raid ? ` · ${raid.name}` : ''}</option>`;
-  }).join('');
+
+  let parties = [...state.parties];
+
+  if (raidId) {
+    parties = parties.filter(p => p.raid_id === raidId);
+  }
+
+  parties.sort((a,b)=>(a.name || '').localeCompare(b.name || ''));
+
+  select.innerHTML =
+    `<option value="">파티 선택</option>` +
+    parties.map(p => `
+      <option value="${p.id}" ${selectedId === p.id ? 'selected' : ''}>
+        ${p.name}
+      </option>
+    `).join('');
+}
+function onScheduleRaidChange() {
+  const raidId = document.getElementById('schedRaid').value;
+  renderSchedPartyOptions('', raidId);
+}
+function renderSchedRaidOptions(selectedRaidId = '') {
+  const select = document.getElementById('schedRaid');
+  const raids = [...state.raids]
+    .filter(v => v.is_active !== false || v.id === selectedRaidId)
+    .sort((a,b)=>(a.sort_order ?? 999)-(b.sort_order ?? 999));
+
+  select.innerHTML =
+    `<option value="">레이드 선택</option>` +
+    raids.map(raid => `
+      <option value="${raid.id}" ${selectedRaidId === raid.id ? 'selected' : ''}>
+        ${raid.icon || '🎯'} ${raid.name}
+      </option>
+    `).join('');
 }
 function renderMemoPlayerOptions(selectedId = '') {
   const select = document.getElementById('memoPlayer');
@@ -2295,22 +2325,31 @@ function duplicateParty(partyId) {
 function openScheduleModal(slotId = null, presetBoardId = null, presetDay = null, presetStart = null) {
   state.editingScheduleId = slotId;
   renderBoardOptions(presetBoardId || state.scheduleBoards[0]?.id || '');
-  renderSchedPartyOptions('');
 
   if (slotId) {
     const slot = state.scheduleSlots.find(v => v.id === slotId);
     if (!slot) return;
     document.getElementById('scheduleModalTitle').textContent = '스케줄 수정';
     renderBoardOptions(slot.board_id || 'board-1');
-    renderSchedPartyOptions(slot.party_id);
+    
+    const party = getParty(slot.party_id);
+    const raidId = party?.raid_id || '';
+    
+    renderSchedRaidOptions(raidId);
+    renderSchedPartyOptions(slot.party_id, raidId);
+    
     document.getElementById('schedDay').value = slot.day_of_week;
     document.getElementById('schedStart').value = normalizeTime(slot.start_time);
     document.getElementById('schedEnd').value = normalizeTime(slot.end_time);
   } else {
     document.getElementById('scheduleModalTitle').textContent = '스케줄 추가';
+    renderSchedRaidOptions('');
+    renderSchedPartyOptions('', '');
+    
     document.getElementById('schedDay').value = presetDay || '3';
     document.getElementById('schedStart').value = presetStart || '21:00';
     document.getElementById('schedEnd').value = presetStart ? minutesToTime((timeToMinutes(presetStart) + 30) % 1440) : '21:30';
+
   }
 
   document.getElementById('scheduleError').textContent = '';
@@ -2321,6 +2360,7 @@ function quickAddSchedule(boardId, day, time) {
 }
 async function saveSchedule() {
   const boardId = document.getElementById('schedBoard').value;
+  const raidId = document.getElementById('schedRaid').value;
   const partyId = document.getElementById('schedParty').value;
   const day = Number(document.getElementById('schedDay').value);
   const start = normalizeTime(document.getElementById('schedStart').value);
@@ -2329,6 +2369,7 @@ async function saveSchedule() {
   errorEl.textContent = '';
 
   if (!boardId) return errorEl.textContent = '스케줄표를 선택해주세요.';
+  if (!raidId) return errorEl.textContent = '레이드를 선택해주세요.';
   if (!partyId) return errorEl.textContent = '파티를 선택해주세요.';
   if (!start || !end) return errorEl.textContent = '시간을 입력해주세요.';
   if (start === end) return errorEl.textContent = '시작 시간과 종료 시간이 같을 수 없습니다.';
@@ -2532,6 +2573,7 @@ async function bootstrap() {
   renderJobSelectOptions();
   renderRaidOptions();
   renderBoardOptions();
+  renderSchedRaidOptions();
   renderSchedPartyOptions();
   renderMemoPlayerOptions();
 }
