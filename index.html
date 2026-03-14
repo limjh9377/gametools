@@ -173,6 +173,38 @@ a{text-decoration:none;color:inherit}
   );
   justify-self:center;
 }
+.schedule-inline-filter{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border:1px solid #e5e7eb;
+  border-radius:10px;
+  background:#f8fafc;
+  color:#64748b;
+  min-width:170px;
+  max-width:220px;
+}
+
+.schedule-inline-filter-label{
+  font-size:12px;
+  font-weight:700;
+  color:#94a3b8;
+  white-space:nowrap;
+}
+
+.schedule-inline-filter select{
+  border:none;
+  background:transparent;
+  color:#475569;
+  font-size:12px;
+  font-weight:700;
+  outline:none;
+  width:100%;
+  min-width:0;
+  padding-right:16px;
+  cursor:pointer;
+}
 
 .memo-header{
   display:flex;
@@ -206,10 +238,22 @@ a{text-decoration:none;color:inherit}
   width:100%;  
 }
 .schedule-block{padding:16px}
-.schedule-block-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.schedule-block-head{
+  display:grid;
+  grid-template-columns:auto auto 1fr;
+  align-items:center;
+  gap:14px;
+  margin-bottom:12px;
+}
 .schedule-block-title{font-size:18px;font-weight:800}
 .schedule-block-sub{font-size:12px;color:var(--sub);margin-top:4px}
-.schedule-block-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.schedule-block-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  justify-self:end;
+}
 .time-edit-btn{
   background:#fff;border:1px solid var(--line);color:var(--sub);
   padding:8px 12px;border-radius:10px;font-weight:700;font-size:12px
@@ -1026,6 +1070,7 @@ let state = {
   toolLinks: [],
   timeEditMode: false,
   currentBattleRole: 'dealer',
+  currentSchedulePlayerFilter: 'all',
 
   editingPlayerId: null,
   editingJobId: null,
@@ -1394,11 +1439,23 @@ function renderScheduleBoards() {
     const slotCount = state.scheduleSlots.filter(v => (v.board_id || 'board-1') === board.id).length;
     return `
       <div class="card schedule-block">
-        <div class="schedule-block-head">
-          <div>
-            <div class="schedule-block-title">${board.title}</div>
-            <div class="schedule-block-sub">등록 일정 ${slotCount}개</div>
-          </div>
+      <div class="schedule-block-head">
+        <div>
+          <div class="schedule-block-title">${board.title}</div>
+          <div class="schedule-block-sub">등록 일정 ${slotCount}개</div>
+        </div>
+      
+        <div class="schedule-inline-filter">
+          <span class="schedule-inline-filter-label">필터 :</span>
+          <select onchange="setSchedulePlayerFilter(this.value)">
+            <option value="all" ${state.currentSchedulePlayerFilter === 'all' ? 'selected' : ''}>-</option>
+            ${state.players.map(player => `
+              <option value="${player.id}" ${state.currentSchedulePlayerFilter === player.id ? 'selected' : ''}>
+                ${player.name}
+              </option>
+            `).join('')}
+          </select>
+        </div>
           <div class="schedule-block-actions">
             <button class="time-edit-btn ${state.timeEditMode ? 'active' : ''}" onclick="toggleTimeEdit()">
               ${state.timeEditMode ? '시간 수정 종료' : '시간 수정'}
@@ -1470,6 +1527,12 @@ function renderSingleScheduleBoard(boardId) {
       if (!party) return;
 
       const members = getPartyMembers(party.id);
+      if (
+        state.currentSchedulePlayerFilter !== 'all' &&
+        !members.some(m => m.player_id === state.currentSchedulePlayerFilter)
+      ) {
+        return;
+      }
       const absentCount = members.filter(m => {
         const a = state.attendance.find(v => v.schedule_slot_id === slot.id && v.player_id === m.player_id);
         return a?.is_absent;
@@ -1674,6 +1737,10 @@ function renderRaidFilterChips() {
     `<button class="filter-chip ${currentRaidFilter === 'all' ? 'active' : ''}" onclick="setRaidFilter('all')">전체</button>`,
     ...raids.map(raid => `<button class="filter-chip ${currentRaidFilter === raid.id ? 'active' : ''}" onclick="setRaidFilter('${raid.id}')">${raid.icon || '🎯'} ${raid.name}</button>`)
   ].join('');
+}
+function setSchedulePlayerFilter(playerId) {
+  state.currentSchedulePlayerFilter = playerId || 'all';
+  renderScheduleBoards();
 }
 function setRaidFilter(raidId) {
   currentRaidFilter = raidId;
