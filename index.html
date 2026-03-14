@@ -118,15 +118,23 @@ a{text-decoration:none;color:inherit}
   padding:14px;
   margin-top:auto;
 }
-  
-.schedule-main{display:flex;flex-direction:column;gap:18px;min-width:0}
+
+.schedule-main{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  min-width:0;
+  align-items:flex-start;
+}
+
 .schedule-top-combined{
   display:grid;
-  grid-template-columns:180px 1px minmax(0,1fr);
+  grid-template-columns:200px 1px minmax(0,1fr);
   align-items:center;
   gap:0;
-  padding:12px 12px;
-}
+  padding:16px 16px;
+  width:max-content;
+  max-width:none;
 }
 
 .schedule-top-left{
@@ -199,14 +207,20 @@ a{text-decoration:none;color:inherit}
 .time-edit-btn.active{background:var(--navy-2);border-color:var(--navy-border);color:#fff}
 
 .schedule-shell{
-  background:#fff;border:1px solid var(--line);border-radius:18px;overflow:auto;box-shadow:var(--shadow)
-}
-.schedule-board{
   width:max-content;
-  margin:0 auto;
+  max-width:100%;
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:18px;
+  overflow:auto;
+  box-shadow:var(--shadow);
+}
+
+.schedule-board{
   display:grid;
   grid-template-columns:100px repeat(7, 130px);
 }
+
 .board-head{
   position:sticky;top:0;z-index:30;background:var(--surface-2);border-bottom:1px solid var(--line);
   padding:12px 10px;text-align:center;font-size:13px;font-weight:800;color:var(--sub)
@@ -500,6 +514,8 @@ a{text-decoration:none;color:inherit}
   .schedule-top-combined{
     grid-template-columns:1fr;
     gap:14px;
+    width:100%;
+    max-width:100%;
   }
 
   .schedule-top-left{
@@ -1373,7 +1389,7 @@ function renderSingleScheduleBoard(boardId) {
   const sorted = getSortedTimeSlots();
   const totalHeight = sorted.length * SLOT_HEIGHT;
   const today = getCurrentKstDay();
-  const dayOrder = [3, 4, 5, 6, 7, 1, 2]; // 수목금토일월화
+  const dayOrder = [3, 4, 5, 6, 7, 1, 2];
 
   let html = '';
   html += `<div class="board-head time-head">시간</div>`;
