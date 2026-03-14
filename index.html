@@ -279,11 +279,31 @@ a{text-decoration:none;color:inherit}
 .event-block:active{cursor:grabbing}
 .event-block.has-absent{outline:2px solid rgba(255,255,255,.75)}
 .event-block.completed{
-  background:linear-gradient(180deg,#e5e7eb,#d1d5db) !important;
+  background:#e5e7eb !important;
   color:#6b7280 !important;
-  box-shadow:0 6px 14px rgba(148,163,184,.18);
+  box-shadow:none !important;
+  border:1px solid #d1d5db;
   opacity:1;
   filter:none;
+}
+
+.event-block.completed .event-title{
+  color:#6b7280 !important;
+}
+
+.event-block.completed .event-party{
+  color:#9ca3af !important;
+}
+
+.event-block.completed .event-badge{
+  background:#d1d5db !important;
+  color:#6b7280 !important;
+}
+
+.event-block.completed .complete-badge{
+  background:#f3f4f6;
+  color:#6b7280;
+  border:none;
 }
 .event-badge{
   position:absolute;top:6px;right:8px;min-width:24px;height:20px;border-radius:999px;
