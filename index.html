@@ -2751,8 +2751,8 @@ async function exportBoardImage(boardId) {
 
     const tempWrap = document.createElement('div');
     tempWrap.className = 'capture-temp-wrap';
-    tempWrap.style.left = '0';
-    tempWrap.style.top = '0';
+    tempWrap.style.left = '-99999px';
+    tempWrap.style.top = '-99999px';
     tempWrap.style.zIndex = '-1';
     tempWrap.style.pointerEvents = 'none';
     tempWrap.style.background = '#f3f5f9';
