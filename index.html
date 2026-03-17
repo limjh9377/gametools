@@ -2734,73 +2734,16 @@ async function subscribeRealtime() {
   }
 
   realtimeChannel = supabaseClient
-    .channel('party-scheduler-realtime')
-
+    .channel('debug-all-public')
     .on('postgres_changes', {
       event: '*',
-      schema: 'public',
-      table: 'players'
-    }, () => scheduleRealtimeReload('플레이어 정보가 갱신되었습니다.'))
-
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'jobs'
-    }, () => scheduleRealtimeReload('직업 정보가 갱신되었습니다.'))
-
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'characters'
-    }, () => scheduleRealtimeReload('캐릭터 정보가 갱신되었습니다.'))
-
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'raids'
-    }, () => scheduleRealtimeReload('레이드 정보가 갱신되었습니다.'))
-
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'parties'
-    }, () => scheduleRealtimeReload('파티 정보가 갱신되었습니다.'))
-
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'party_members'
-    }, () => scheduleRealtimeReload('파티 구성 정보가 갱신되었습니다.'))
-
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'schedule_slots'
-    }, () => scheduleRealtimeReload('스케줄이 갱신되었습니다.'))
-
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'attendance'
-    }, () => scheduleRealtimeReload('자리비움 정보가 갱신되었습니다.'))
-
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'weekly_player_notes'
-    }, () => scheduleRealtimeReload('메모가 갱신되었습니다.'))
-
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'schedule_settings'
-    }, () => scheduleRealtimeReload('설정이 갱신되었습니다.'))
-
-    .subscribe((status) => {
-      console.log('Realtime status:', status);
-      if (status === 'SUBSCRIBED') {
-        showToast('실시간 동기화가 연결되었습니다.', 'success');
-      }
+      schema: 'public'
+    }, (payload) => {
+      console.log('REALTIME EVENT:', payload);
+      scheduleRealtimeReload('');
+    })
+    .subscribe((status, err) => {
+      console.log('Realtime status:', status, err);
     });
 }
   
