@@ -2717,12 +2717,12 @@ async function reloadAndRender() {
   renderAll();
 }
 
-function scheduleRealtimeReload(message = '변경사항이 반영되었습니다.') {
+function scheduleRealtimeReload(message = '') {
   clearTimeout(realtimeReloadTimer);
   realtimeReloadTimer = setTimeout(async () => {
     await reloadAndRender();
     if (message) showToast(message, 'info');
-  }, 300);
+  }, 200);
 }
 
 async function subscribeRealtime() {
@@ -2734,16 +2734,103 @@ async function subscribeRealtime() {
   }
 
   realtimeChannel = supabaseClient
-    .channel('debug-all-public')
+    .channel('party-scheduler-realtime')
+
     .on('postgres_changes', {
       event: '*',
-      schema: 'public'
+      schema: 'public',
+      table: 'players'
     }, (payload) => {
-      console.log('REALTIME EVENT:', payload);
+      console.log('REALTIME players:', payload);
       scheduleRealtimeReload('');
     })
+
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'jobs'
+    }, (payload) => {
+      console.log('REALTIME jobs:', payload);
+      scheduleRealtimeReload('');
+    })
+
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'characters'
+    }, (payload) => {
+      console.log('REALTIME characters:', payload);
+      scheduleRealtimeReload('');
+    })
+
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'raids'
+    }, (payload) => {
+      console.log('REALTIME raids:', payload);
+      scheduleRealtimeReload('');
+    })
+
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'parties'
+    }, (payload) => {
+      console.log('REALTIME parties:', payload);
+      scheduleRealtimeReload('');
+    })
+
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'party_members'
+    }, (payload) => {
+      console.log('REALTIME party_members:', payload);
+      scheduleRealtimeReload('');
+    })
+
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'schedule_slots'
+    }, (payload) => {
+      console.log('REALTIME schedule_slots:', payload);
+      scheduleRealtimeReload('');
+    })
+
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'attendance'
+    }, (payload) => {
+      console.log('REALTIME attendance:', payload);
+      scheduleRealtimeReload('');
+    })
+
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'weekly_player_notes'
+    }, (payload) => {
+      console.log('REALTIME weekly_player_notes:', payload);
+      scheduleRealtimeReload('');
+    })
+
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'schedule_settings'
+    }, (payload) => {
+      console.log('REALTIME schedule_settings:', payload);
+      scheduleRealtimeReload('');
+    })
+
     .subscribe((status, err) => {
       console.log('Realtime status:', status, err);
+      if (status === 'SUBSCRIBED') {
+        showToast('실시간 동기화가 연결되었습니다.', 'success');
+      }
     });
 }
   
