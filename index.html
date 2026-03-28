@@ -1340,7 +1340,9 @@ async function loadAllData() {
     "00:00","00:30","01:00","01:30","02:00"
   ];
   state.scheduleBoards = setting?.board_configs || [{ id:'board-1', title:'이번 주 스케줄' }];
-  state.toolLinks = setting?.tool_links || DEFAULT_TOOL_LINKS;
+  state.toolLinks = Array.isArray(setting?.tool_links) && setting.tool_links.length > 0
+  ? setting.tool_links
+  : DEFAULT_TOOL_LINKS;
 }
 
 async function persistSettings() {
