@@ -1339,32 +1339,10 @@ async function loadAllData() {
     "19:30","20:00","20:30","21:00","21:30","22:00","22:30","23:00","23:30",
     "00:00","00:30","01:00","01:30","02:00"
   ];
-state.scheduleBoards = setting?.board_configs || [{ id:'board-1', title:'이번 주 스케줄' }];
+  state.scheduleBoards = setting?.board_configs || [{ id:'board-1', title:'이번 주 스케줄' }];
+  state.toolLinks = setting?.tool_links || DEFAULT_TOOL_LINKS;
+}
 
-const savedToolLinks = Array.isArray(setting?.tool_links) ? setting.tool_links : [];
-
-state.toolLinks = DEFAULT_TOOL_LINKS.map(defaultLink => {
-  const saved = savedToolLinks.find(v => v.id === defaultLink.id) || {};
-  const savedUrl = String(saved.url || '').trim();
-
-  return {
-    id: defaultLink.id,
-    label: saved.label || defaultLink.label,
-    url: savedUrl || defaultLink.url
-  };
-});
-
-// DB에만 있는 추가 링크도 유지
-savedToolLinks.forEach(link => {
-  if (!state.toolLinks.find(v => v.id === link.id)) {
-    state.toolLinks.push({
-      id: link.id,
-      label: link.label,
-      url: String(link.url || '').trim()
-    });
-  }
-});
-  
 async function persistSettings() {
   await dbUpdate('schedule_settings', { setting_key: 'default' }, {
     time_slots: state.timeSlots,
@@ -1421,8 +1399,7 @@ function renderAssignedPartyPanel() {
 function renderToolbox() {
   const wrap = document.getElementById('toolboxList');
   wrap.innerHTML = state.toolLinks.map(link => {
-    const defaultLink = DEFAULT_TOOL_LINKS.find(v => v.id === link.id);
-const href = String(link.url || '').trim() || defaultLink?.url || '#';
+    const href = link.url && String(link.url).trim() ? link.url : '#';
     const blank = href !== '#' ? `target="_blank" rel="noopener noreferrer"` : '';
     return `
       <a class="toolbox-link" href="${href}" ${blank}
