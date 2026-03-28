@@ -1347,7 +1347,7 @@ async function persistSettings() {
   await dbUpdate('schedule_settings', { setting_key: 'default' }, {
     time_slots: state.timeSlots,
     board_configs: state.scheduleBoards,
-    tool_links: state.toolLinks
+    tool_links: state.toolLinks 
   });
 }
 
