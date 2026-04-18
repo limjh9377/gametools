@@ -1152,6 +1152,52 @@ function getBoard(id){ return state.scheduleBoards.find(v => v.id === id); }
 function getPartyMembers(partyId){
   return state.partyMembers.filter(v => v.party_id === partyId).sort((a,b)=>a.slot_order-b.slot_order);
 }
+function getFilteredPartyMember(partyId) {
+  if (state.currentSchedulePlayerFilter === 'all') return null;
+  return getPartyMembers(partyId).find(
+    m => m.player_id === state.currentSchedulePlayerFilter
+  ) || null;
+}
+
+function getScheduleSubLabel(slot, party) {
+  if (!party) return '-';
+
+  if (state.currentSchedulePlayerFilter === 'all') {
+    return party.name;
+  }
+
+  const filteredMember = getFilteredPartyMember(party.id);
+  if (!filteredMember) return party.name;
+
+  const ch = getCharacter(filteredMember.character_id);
+  return ch?.name || party.name;
+}
+
+async function clearCompletedSchedules(boardId) {
+  const targetSlots = state.scheduleSlots.filter(slot => {
+    if ((slot.board_id || 'board-1') !== boardId) return false;
+    if (!slot.is_completed) return false;
+
+    if (state.currentSchedulePlayerFilter === 'all') return true;
+
+    const members = getPartyMembers(slot.party_id);
+    return members.some(m => m.player_id === state.currentSchedulePlayerFilter);
+  });
+
+  if (!targetSlots.length) {
+    showToast('해제할 완료 스케줄이 없습니다.', 'info');
+    return;
+  }
+
+  if (!confirm(`완료 체크된 스케줄 ${targetSlots.length}개를 모두 해제할까요?`)) return;
+
+  for (const slot of targetSlots) {
+    await dbUpdate('schedule_slots', { id: slot.id }, { is_completed: false });
+  }
+
+  await reloadAndRender();
+  showToast('완료 체크를 모두 해제했습니다.');
+}
 function getRoleIcon(role) {
   return role === 'support'
     ? `<span class="role-icon role-support">✚</span>`
@@ -1483,12 +1529,13 @@ function renderScheduleBoards() {
             `).join('')}
           </select>
         </div>
-          <div class="schedule-block-actions">
-            <button class="time-edit-btn ${state.timeEditMode ? 'active' : ''}" onclick="toggleTimeEdit()">
-              ${state.timeEditMode ? '시간 수정 종료' : '시간 수정'}
-            </button>
-            <button class="btn btn-ghost btn-sm" onclick="exportBoardImage('${board.id}')">이미지 저장</button>
-            <button class="btn btn-primary btn-sm" onclick="openScheduleModal(null, '${board.id}')">+ 스케줄 추가</button>
+        <div class="schedule-block-actions">
+          <button class="time-edit-btn ${state.timeEditMode ? 'active' : ''}" onclick="toggleTimeEdit()">
+            ${state.timeEditMode ? '시간 수정 종료' : '시간 수정'}
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="clearCompletedSchedules('${board.id}')">완료 전체 해제</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportBoardImage('${board.id}')">이미지 저장</button>
+          <button class="btn btn-primary btn-sm" onclick="openScheduleModal(null, '${board.id}')">+ 스케줄 추가</button>
             ${state.scheduleBoards.length > 1 ? `<button class="btn btn-danger btn-sm" onclick="deleteScheduleBoard('${board.id}')">스케줄표 삭제</button>` : ''}
           </div>
         </div>
@@ -1571,6 +1618,7 @@ function renderSingleScheduleBoard(boardId) {
       const isCompact = height <= 44;
       const color = raid?.color || '#10b981';
       const raidName = raid?.name || '레이드';
+      const subLabel = getScheduleSubLabel(slot, party);
       const eventTextColor = getContrastTextColor(color);
       const eventSubTextColor = getContrastSubTextColor(color);
       const badgeBgColor = isLightColor(color) ? 'rgba(17,24,39,.10)' : 'rgba(255,255,255,.24)';
@@ -1589,7 +1637,7 @@ function renderSingleScheduleBoard(boardId) {
           
           <div>
             <div class="event-title" style="color:${eventTextColor}">${raidName}</div>
-            <div class="event-party" style="color:${eventSubTextColor}">${party.name}</div>
+            <div class="event-party" style="color:${eventSubTextColor}">${subLabel}</div>
           </div>
       
           ${absentCount > 0 ? `<div class="event-badge" style="background:${badgeBgColor};color:${badgeTextColor}">🚫${absentCount}</div>` : ''}
