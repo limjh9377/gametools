@@ -350,6 +350,14 @@ a{text-decoration:none;color:inherit}
   color:#6b7280;
   border:none;
 }
+.event-block.empty-time{
+  background:linear-gradient(180deg,#d4d4d8,#c4c4c9) !important;
+  color:#111827 !important;
+  box-shadow:none !important;
+  border:1px solid #d1d5db;
+}
+.event-block.empty-time .event-title{color:#111827 !important}
+.event-block.empty-time .event-party{color:#111827 !important;opacity:.85}
 .event-badge{
   position:absolute;top:6px;right:8px;min-width:24px;height:20px;border-radius:999px;
   background:rgba(255,255,255,.24);display:flex;align-items:center;justify-content:center;
@@ -459,7 +467,7 @@ a{text-decoration:none;color:inherit}
 }
 .modal-overlay.open .modal{transform:translateY(0) scale(1);opacity:1}
 .modal.sm{max-width:450px}
-.modal.lg{max-width:1040px}
+.modal.lg{max-width:1220px}
 .modal-header{
   position:sticky;top:0;background:#fff;z-index:2;
   display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line)
@@ -484,10 +492,13 @@ a{text-decoration:none;color:inherit}
 }
 .role-choice.active{border-color:#10b981;background:#ecfdf5;color:#047857}
 
-.party-modal-grid{display:grid;grid-template-columns:320px 1fr;gap:18px}
+.party-modal-grid{display:grid;grid-template-columns:560px 1fr;gap:18px}
 .quick-pick{
   border:1px solid var(--line);border-radius:14px;background:#fbfcfe;padding:12px;height:540px;overflow:auto
 }
+.quick-pick-select{position:sticky;top:0;z-index:3;background:#fbfcfe;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--line-soft)}
+.quick-pick-select label{display:block;margin-bottom:6px;font-size:12px;font-weight:800;color:var(--sub)}
+.quick-pick-empty{height:390px;border:1.5px dashed #cbd5e1;border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:13px;font-weight:800;text-align:center;line-height:1.5}
 .quick-pick-title{font-size:13px;font-weight:800;margin-bottom:10px}
 .player-group{border:1px solid var(--line);border-radius:12px;background:#fff;margin-bottom:10px;overflow:hidden}
 .player-group-head{
@@ -495,14 +506,35 @@ a{text-decoration:none;color:inherit}
 }
 .player-group-body{padding:8px;display:flex;flex-direction:column;gap:8px}
 .pick-char{
-  display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:#f8fafc;border:1px solid transparent
+  display:grid;grid-template-columns:24px minmax(112px,150px) minmax(0,1fr) 52px;align-items:center;gap:8px;padding:9px 10px;border-radius:10px;background:#f8fafc;border:1px solid transparent;max-width:100%;overflow:hidden
 }
 .pick-char:hover{border-color:#10b981;background:#ecfdf5}
 .pick-char.disabled{opacity:.45;background:#f3f4f6;pointer-events:none}
-.pick-char-main{flex:1;min-width:0}
-.pick-char-name{font-size:12px;font-weight:700;color:#64748b}
-.pick-char-sub{font-size:12px;color:#111827;font-weight:800}
-.pick-char-used{font-size:10px;font-weight:800;color:#64748b;background:#e5e7eb;padding:2px 6px;border-radius:999px}
+.pick-char-main{min-width:0}
+.pick-char-name{font-size:12px;font-weight:700;color:#64748b;white-space:nowrap;writing-mode:horizontal-tb;text-orientation:mixed}
+.pick-char-sub{font-size:12px;color:#111827;font-weight:800;white-space:nowrap;writing-mode:horizontal-tb;text-orientation:mixed}
+.pick-char-assignments{display:flex;flex-wrap:wrap;gap:5px;align-items:center;min-width:0;overflow:hidden}
+.pick-char-assignment{display:inline-flex;align-items:center;gap:4px;padding:3px 7px;border-radius:10px;background:#f3f4f6;border:1px solid #e5e7eb;color:#6b7280;font-size:10px;font-weight:700;line-height:1.2;white-space:nowrap;writing-mode:horizontal-tb;text-orientation:mixed}
+.pick-char-recommend{justify-self:end;align-self:center;display:inline-flex;align-items:center;justify-content:center;width:46px;max-width:46px;height:24px;padding:0;border-radius:999px;font-size:10px;font-weight:800;white-space:nowrap;writing-mode:horizontal-tb;text-orientation:mixed;overflow:hidden}
+.pick-char-recommend.good{background:#d1fae5;color:#047857}
+.pick-char-recommend.bad{background:#ffedd5;color:#ea580c}
+.assignment-help{font-size:13px;color:var(--sub);line-height:1.6;margin-bottom:14px}
+.assignment-list{display:flex;flex-direction:column;gap:10px}
+.assignment-option{border:1px solid var(--line);border-radius:12px;background:#fff;padding:12px;cursor:pointer;transition:.15s}
+.assignment-option:hover{border-color:#a7f3d0;background:#f8fffb}
+.assignment-option.selected{border-color:#10b981;background:#ecfdf5;box-shadow:inset 0 0 0 1px rgba(16,185,129,.12)}
+.assignment-option-top{display:flex;align-items:center;gap:10px}
+.assignment-radio{width:18px;height:18px;border-radius:50%;border:2px solid #cbd5e1;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.assignment-option.selected .assignment-radio{border-color:#10b981}
+.assignment-radio::after{content:'';width:8px;height:8px;border-radius:50%;background:#10b981;display:block;opacity:0;transform:scale(.6);transition:.15s}
+.assignment-option.selected .assignment-radio::after{opacity:1;transform:scale(1)}
+.assignment-raid{font-size:13px;font-weight:800;color:#111827}
+.assignment-party{font-size:12px;color:var(--sub);margin-top:4px}
+.assignment-empty{font-size:12px;color:var(--muted);padding:10px 0}
+.app-dialog-message{font-size:14px;color:#111827;line-height:1.6;white-space:pre-line}
+.app-dialog-input{width:100%;margin-top:12px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);font-size:14px;outline:none}
+.app-dialog-input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+.empty-detail-note{font-size:13px;color:var(--sub);padding:14px;border:1px solid var(--line);border-radius:12px;background:#f8fafc}
 
 .member-slots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .party-member-slot{
@@ -574,16 +606,32 @@ a{text-decoration:none;color:inherit}
 .toast.info{border-left:4px solid #3b82f6}
 
 @media (max-width:1280px){
-  .schedule-layout{grid-template-columns:1fr}
+  .schedule-layout{grid-template-columns:1fr;justify-content:stretch}
   .schedule-side{
     position:relative;
     top:auto;
     height:auto;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(220px,280px);
+    gap:14px;
+    align-items:start;
   }
-  .assigned-panel{
-    margin-top:0;
-  }
+  .toolbox-card,.assigned-panel{margin-top:0}
+  .toolbox-list{flex-direction:row;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}
+  .toolbox-link{width:150px;min-width:150px;min-height:40px;padding:9px 12px;white-space:nowrap}
+  .toolbox-hint{white-space:normal}
+  .assigned-panel{align-self:stretch}
+  .assigned-panel-body{max-height:118px;overflow:auto}
+  .assigned-raid-group{margin-bottom:8px}
+  .assigned-raid-list{padding:7px 9px;line-height:1.4}
+  .schedule-main{width:max-content;max-width:100%}
+  .schedule-block{width:max-content;max-width:100%}
+  .schedule-shell{width:max-content;max-width:100%}
   .party-modal-grid{grid-template-columns:1fr}
+}
+@media (max-width:760px){
+  .schedule-side{grid-template-columns:1fr}
+  .toolbox-link{width:142px;min-width:142px}
 }
 @media (max-width:1100px){
   .schedule-top-combined{
@@ -936,6 +984,10 @@ a{text-decoration:none;color:inherit}
       <div class="party-modal-grid">
         <div class="quick-pick">
           <div class="quick-pick-title">빠른 배치 (플레이어별 캐릭터)</div>
+          <div class="quick-pick-select">
+            <label>1. 플레이어 선택</label>
+            <select class="form-control" id="partyPlayerFilter" onchange="setPartyPlayerFilter(this.value)"></select>
+          </div>
           <div id="quickPickWrap"></div>
         </div>
 
@@ -1045,6 +1097,44 @@ a{text-decoration:none;color:inherit}
   </div>
 </div>
 
+<div class="modal-overlay" id="appDialogModal">
+  <div class="modal sm">
+    <div class="modal-header">
+      <div class="modal-title" id="appDialogTitle">확인</div>
+      <button class="close-btn" onclick="resolveAppDialog(false)">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="app-dialog-message" id="appDialogMessage"></div>
+      <input class="app-dialog-input" id="appDialogInput" style="display:none">
+    </div>
+    <div class="modal-footer" id="appDialogFooter">
+      <button class="btn btn-ghost" id="appDialogCancelBtn" onclick="resolveAppDialog(false)">취소</button>
+      <button class="btn btn-blue" id="appDialogOkBtn" onclick="resolveAppDialog(true)">확인</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="assignmentModal">
+  <div class="modal sm">
+    <div class="modal-header">
+      <div class="modal-title">레이드 배치 확인</div>
+      <button class="close-btn" onclick="closeModal('assignmentModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="assignment-help">
+        이 캐릭터는 현재 아래 레이드에 배치되어 있습니다.<br>
+        특정 레이드에서 제외하고 현재 파티에 배치할까요?
+      </div>
+      <div class="assignment-list" id="assignmentModalList"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('assignmentModal')">취소</button>
+      <button class="btn btn-ghost" onclick="confirmAssignmentSelection(false)">그대로 추가</button>
+      <button class="btn btn-blue" onclick="confirmAssignmentSelection(true)">선택한 레이드 제외 후 추가</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toastWrap"></div>
 
 <script>
@@ -1085,6 +1175,7 @@ let state = {
   timeEditMode: false,
   currentBattleRole: 'dealer',
   currentSchedulePlayerFilter: 'all',
+  currentPartyPlayerFilter: '',
 
   editingPlayerId: null,
   editingJobId: null,
@@ -1095,12 +1186,23 @@ let state = {
   currentDetailSlotId: null,
 
   currentCharPlayerId: null,
-  editingPartyMemberSlots: []
+  editingPartyMemberSlots: [],
+  pendingCharacterRemovalMap: {},
+  assignmentPrompt: null,
+  appDialogResolver: null,
+  appDialogMode: 'confirm'
 };
 
 let draggedScheduleId = null;
 let realtimeChannel = null;
 let realtimeReloadTimer = null;
+let suppressRealtimeUntil = 0;
+function suppressRealtime(ms = 900) {
+  suppressRealtimeUntil = Date.now() + ms;
+}
+function isRealtimeSuppressed() {
+  return Date.now() < suppressRealtimeUntil;
+}
 let resizeState = {
   slotId: null,
   mode: null,
@@ -1149,6 +1251,51 @@ function getCharacter(id){ return state.characters.find(v => v.id === id); }
 function getRaid(id){ return state.raids.find(v => v.id === id); }
 function getParty(id){ return state.parties.find(v => v.id === id); }
 function getBoard(id){ return state.scheduleBoards.find(v => v.id === id); }
+function isEmptyTimeRaid(raid) {
+  return !!raid && (raid.difficulty_text === 'EMPTY_TIME' || raid.name === 'Zzz');
+}
+function isEmptyTimeParty(party) {
+  if (!party) return false;
+  const raid = getRaid(party.raid_id);
+  return isEmptyTimeRaid(raid) || party.name === '-';
+}
+function getEmptyTimeParty() {
+  const emptyRaid = state.raids.find(isEmptyTimeRaid);
+  if (!emptyRaid) return null;
+  return state.parties.find(p => p.raid_id === emptyRaid.id && p.name === '-') || null;
+}
+async function ensureEmptyTimeParty() {
+  let emptyRaid = state.raids.find(isEmptyTimeRaid);
+  if (!emptyRaid) {
+    const insertedRaid = await dbInsert('raids', {
+      name: 'Zzz',
+      min_level: 1,
+      max_level: 9999,
+      difficulty_text: 'EMPTY_TIME',
+      color: '#d1d5db',
+      icon: '',
+      sort_order: 9999,
+      is_active: false
+    });
+    emptyRaid = insertedRaid?.[0];
+    if (!emptyRaid) return null;
+    state.raids.push(emptyRaid);
+  }
+
+  let emptyParty = state.parties.find(p => p.raid_id === emptyRaid.id && p.name === '-');
+  if (!emptyParty) {
+    const insertedParty = await dbInsert('parties', {
+      name: '-',
+      raid_id: emptyRaid.id,
+      party_size: 4
+    });
+    emptyParty = insertedParty?.[0];
+    if (!emptyParty) return null;
+    state.parties.push(emptyParty);
+  }
+
+  return emptyParty;
+}
 function getPartyMembers(partyId){
   return state.partyMembers.filter(v => v.party_id === partyId).sort((a,b)=>a.slot_order-b.slot_order);
 }
@@ -1189,7 +1336,7 @@ async function clearCompletedSchedules(boardId) {
     return;
   }
 
-  if (!confirm(`완료 체크된 스케줄 ${targetSlots.length}개를 모두 해제할까요?`)) return;
+  if (!(await appConfirm(`완료 체크된 스케줄 ${targetSlots.length}개를 모두 해제할까요?`))) return;
 
   for (const slot of targetSlots) {
     await dbUpdate('schedule_slots', { id: slot.id }, { is_completed: false });
@@ -1254,6 +1401,57 @@ function closeModal(id){
   if (!el) return;
   el.classList.remove('open');
   document.body.style.overflow = '';
+}
+function openAppDialog({ title = '확인', message = '', mode = 'confirm', defaultValue = '' } = {}) {
+  return new Promise(resolve => {
+    state.appDialogResolver = resolve;
+    state.appDialogMode = mode;
+
+    const titleEl = document.getElementById('appDialogTitle');
+    const messageEl = document.getElementById('appDialogMessage');
+    const inputEl = document.getElementById('appDialogInput');
+    const cancelBtn = document.getElementById('appDialogCancelBtn');
+    const okBtn = document.getElementById('appDialogOkBtn');
+
+    if (titleEl) titleEl.textContent = title;
+    if (messageEl) messageEl.textContent = message;
+    if (inputEl) {
+      inputEl.style.display = mode === 'prompt' ? 'block' : 'none';
+      inputEl.value = defaultValue || '';
+      inputEl.onkeydown = e => {
+        if (e.key === 'Enter') resolveAppDialog(true);
+        if (e.key === 'Escape') resolveAppDialog(false);
+      };
+    }
+    if (cancelBtn) cancelBtn.textContent = mode === 'alert' ? '닫기' : '취소';
+    if (okBtn) okBtn.style.display = mode === 'alert' ? 'none' : 'inline-flex';
+
+    openModal('appDialogModal');
+    setTimeout(() => {
+      if (mode === 'prompt') inputEl?.focus();
+      else okBtn?.focus();
+    }, 0);
+  });
+}
+function resolveAppDialog(ok) {
+  const resolver = state.appDialogResolver;
+  const mode = state.appDialogMode;
+  const inputEl = document.getElementById('appDialogInput');
+  state.appDialogResolver = null;
+  closeModal('appDialogModal');
+
+  if (!resolver) return;
+  if (mode === 'prompt') resolver(ok ? inputEl.value : null);
+  else resolver(!!ok);
+}
+function appConfirm(message, title = '확인') {
+  return openAppDialog({ title, message, mode: 'confirm' });
+}
+function appPrompt(message, defaultValue = '', title = '입력') {
+  return openAppDialog({ title, message, mode: 'prompt', defaultValue });
+}
+function appAlert(message, title = '안내') {
+  return openAppDialog({ title, message, mode: 'alert' });
 }
 function bindModalCloseEvents() {
   document.querySelectorAll('.modal-overlay').forEach(overlay => {
@@ -1424,14 +1622,14 @@ function renderAssignedPartyPanel() {
   if (!wrap) return;
 
   const assignedPartyIds = new Set(state.scheduleSlots.map(v => v.party_id));
-  const unassigned = state.parties.filter(p => !assignedPartyIds.has(p.id));
+  const unassigned = state.parties.filter(p => !isEmptyTimeParty(p) && !assignedPartyIds.has(p.id));
 
   if (!unassigned.length) {
     wrap.innerHTML = `<div class="assigned-empty">스케줄 추가 필요한 파티가 없습니다.</div>`;
     return;
   }
 
-  const raids = [...state.raids].sort((a,b)=>(a.sort_order ?? 999)-(b.sort_order ?? 999));
+  const raids = [...state.raids].filter(v => !isEmptyTimeRaid(v)).sort((a,b)=>(a.sort_order ?? 999)-(b.sort_order ?? 999));
   let html = '';
 
   raids.forEach(raid => {
@@ -1601,14 +1799,16 @@ function renderSingleScheduleBoard(boardId) {
       const raid = party ? getRaid(party.raid_id) : null;
       if (!party) return;
 
+      const isEmptyTime = isEmptyTimeParty(party);
       const members = getPartyMembers(party.id);
       if (
+        !isEmptyTime &&
         state.currentSchedulePlayerFilter !== 'all' &&
         !members.some(m => m.player_id === state.currentSchedulePlayerFilter)
       ) {
         return;
       }
-      const absentCount = members.filter(m => {
+      const absentCount = isEmptyTime ? 0 : members.filter(m => {
         const a = state.attendance.find(v => v.schedule_slot_id === slot.id && v.player_id === m.player_id);
         return a?.is_absent;
       }).length;
@@ -1616,16 +1816,16 @@ function renderSingleScheduleBoard(boardId) {
       const top = getSlotTop(slot.start_time);
       const height = getSlotHeight(slot.start_time, slot.end_time);
       const isCompact = height <= 44;
-      const color = raid?.color || '#10b981';
-      const raidName = raid?.name || '레이드';
-      const subLabel = getScheduleSubLabel(slot, party);
+      const color = isEmptyTime ? '#d1d5db' : (raid?.color || '#10b981');
+      const raidName = isEmptyTime ? 'Zzz' : (raid?.name || '레이드');
+      const subLabel = isEmptyTime ? '-' : getScheduleSubLabel(slot, party);
       const eventTextColor = getContrastTextColor(color);
       const eventSubTextColor = getContrastSubTextColor(color);
       const badgeBgColor = isLightColor(color) ? 'rgba(17,24,39,.10)' : 'rgba(255,255,255,.24)';
       const badgeTextColor = isLightColor(color) ? '#111827' : '#ffffff';
 
       html += `
-        <div class="event-block ${slot.is_completed ? 'completed' : ''} ${absentCount > 0 ? 'has-absent' : ''} ${isCompact ? 'compact' : ''}"
+        <div class="event-block ${isEmptyTime ? 'empty-time' : ''} ${slot.is_completed ? 'completed' : ''} ${absentCount > 0 ? 'has-absent' : ''} ${isCompact ? 'compact' : ''}"
           data-slot-id="${slot.id}"
           draggable="true"
           ondragstart="onScheduleDragStart(event, '${slot.id}')"
@@ -1666,7 +1866,7 @@ function buildHitAreas(boardId, day) {
 
 async function addScheduleBoard() {
   const nextNo = state.scheduleBoards.length + 1;
-  const title = prompt('새 스케줄표 이름을 입력해주세요.', `스케줄표 ${nextNo}`);
+  const title = await appPrompt('새 스케줄표 이름을 입력해주세요.', `스케줄표 ${nextNo}`, '스케줄표 추가');
   if (title === null) return;
   state.scheduleBoards.push({ id: 'board-' + Date.now(), title: (title || '').trim() || `스케줄표 ${nextNo}` });
   await persistSettings();
@@ -1735,6 +1935,17 @@ function startResizeSchedule(event, slotId, mode) {
   window.addEventListener('mousemove', onResizeScheduleMove);
   window.addEventListener('mouseup', endResizeSchedule);
 }
+function updateScheduleBlockElement(slot) {
+  if (!slot) return;
+  const el = document.querySelector(`.event-block[data-slot-id="${slot.id}"]`);
+  if (!el) return;
+
+  const top = getSlotTop(slot.start_time);
+  const height = getSlotHeight(slot.start_time, slot.end_time);
+  el.style.top = `${top + 4}px`;
+  el.style.height = `${Math.max(height - 8, 36)}px`;
+  el.classList.toggle('compact', height <= 44);
+}
 function onResizeScheduleMove(event) {
   if (!resizeState.slotId || !resizeState.mode) return;
 
@@ -1759,7 +1970,7 @@ function onResizeScheduleMove(event) {
 
   slot.start_time = minutesToTime(nextStart);
   slot.end_time = minutesToTime(nextEnd);
-  renderScheduleBoards();
+  updateScheduleBlockElement(slot);
 }
 async function endResizeSchedule() {
   window.removeEventListener('mousemove', onResizeScheduleMove);
@@ -1772,11 +1983,12 @@ async function endResizeSchedule() {
 
   const slot = state.scheduleSlots.find(v => v.id === resizeState.slotId);
   if (slot) {
-    await dbUpdate('schedule_slots', { id: slot.id }, {
+    suppressRealtime();
+    const result = await dbUpdate('schedule_slots', { id: slot.id }, {
       start_time: normalizeTime(slot.start_time),
       end_time: normalizeTime(slot.end_time)
     });
-    await reloadAndRender();
+    if (!result) await reloadAndRender();
   }
 
   resizeState.slotId = null;
@@ -1795,7 +2007,7 @@ async function endResizeSchedule() {
 async function deleteScheduleBoard(boardId) {
   const board = getBoard(boardId);
   if (!board) return;
-  if (!confirm(`"${board.title}" 스케줄표를 통째로 삭제할까요?`)) return;
+  if (!(await appConfirm(`"${board.title}" 스케줄표를 통째로 삭제할까요?`))) return;
 
   const targetSlots = state.scheduleSlots.filter(v => (v.board_id || 'board-1') === boardId);
   for (const slot of targetSlots) {
@@ -1811,7 +2023,7 @@ async function deleteScheduleBoard(boardId) {
 
 function renderRaidFilterChips() {
   const wrap = document.getElementById('raidFilterChips');
-  const raids = [...state.raids].filter(v => v.is_active !== false).sort((a,b)=>(a.sort_order ?? 999)-(b.sort_order ?? 999));
+  const raids = [...state.raids].filter(v => v.is_active !== false && !isEmptyTimeRaid(v)).sort((a,b)=>(a.sort_order ?? 999)-(b.sort_order ?? 999));
   wrap.innerHTML = [
     `<button class="filter-chip ${currentRaidFilter === 'all' ? 'active' : ''}" onclick="setRaidFilter('all')">전체</button>`,
     ...raids.map(raid => `<button class="filter-chip ${currentRaidFilter === raid.id ? 'active' : ''}" onclick="setRaidFilter('${raid.id}')">${raid.icon || '🎯'} ${raid.name}</button>`)
@@ -1829,7 +2041,7 @@ function setRaidFilter(raidId) {
 
 function renderParties() {
   const wrap = document.getElementById('partiesWrap');
-  const raids = [...state.raids].filter(v => v.is_active !== false).sort((a,b)=>(a.sort_order ?? 999)-(b.sort_order ?? 999));
+  const raids = [...state.raids].filter(v => v.is_active !== false && !isEmptyTimeRaid(v)).sort((a,b)=>(a.sort_order ?? 999)-(b.sort_order ?? 999));
 
   let html = '';
   raids.forEach(raid => {
@@ -2045,7 +2257,7 @@ function renderJobSelectOptions(selectedId = '') {
 }
 function renderRaidOptions(selectedId = '') {
   const raidSelect = document.getElementById('partyRaid');
-  const raids = [...state.raids].filter(v => v.is_active !== false || v.id === selectedId).sort((a,b)=>(a.sort_order ?? 999)-(b.sort_order ?? 999));
+  const raids = [...state.raids].filter(v => !isEmptyTimeRaid(v) && (v.is_active !== false || v.id === selectedId)).sort((a,b)=>(a.sort_order ?? 999)-(b.sort_order ?? 999));
   raidSelect.innerHTML = raids.map(raid => `<option value="${raid.id}" ${selectedId === raid.id ? 'selected' : ''}>${raid.icon || '🎯'} ${raid.name}</option>`).join('');
 }
 function renderBoardOptions(selectedId = '') {
@@ -2055,7 +2267,14 @@ function renderBoardOptions(selectedId = '') {
 function renderSchedPartyOptions(selectedId = '', raidId = '') {
   const select = document.getElementById('schedParty');
 
-  let parties = [...state.parties];
+  if (raidId === '__empty_time__') {
+    select.innerHTML = `<option value="__empty_time_party__" selected>-</option>`;
+    select.disabled = true;
+    return;
+  }
+
+  select.disabled = false;
+  let parties = [...state.parties].filter(p => !isEmptyTimeParty(p));
 
   if (raidId) {
     parties = parties.filter(p => p.raid_id === raidId);
@@ -2078,11 +2297,11 @@ function onScheduleRaidChange() {
 function renderSchedRaidOptions(selectedRaidId = '') {
   const select = document.getElementById('schedRaid');
   const raids = [...state.raids]
-    .filter(v => v.is_active !== false || v.id === selectedRaidId)
+    .filter(v => !isEmptyTimeRaid(v) && (v.is_active !== false || v.id === selectedRaidId))
     .sort((a,b)=>(a.sort_order ?? 999)-(b.sort_order ?? 999));
 
   select.innerHTML =
-    `<option value="">레이드 선택</option>` +
+    `<option value="">레이드 선택</option><option value="__empty_time__" ${selectedRaidId === '__empty_time__' ? 'selected' : ''}>Zzz / 빈 일정 시간</option>` +
     raids.map(raid => `
       <option value="${raid.id}" ${selectedRaidId === raid.id ? 'selected' : ''}>
         ${raid.icon || '🎯'} ${raid.name}
@@ -2133,7 +2352,7 @@ async function savePlayer() {
 async function deletePlayer(id) {
   const hasChar = state.characters.some(c => c.player_id === id);
   if (hasChar) return showToast('캐릭터가 있는 플레이어는 먼저 캐릭터를 삭제해주세요.', 'error');
-  if (!confirm('플레이어를 삭제할까요?')) return;
+  if (!(await appConfirm('플레이어를 삭제할까요?'))) return;
   await dbDelete('players', { id });
   await reloadAndRender();
 }
@@ -2179,7 +2398,7 @@ async function saveJob() {
 async function deleteJob(id) {
   const used = state.characters.some(c => c.job_id === id);
   if (used) return showToast('사용 중인 직업은 삭제할 수 없습니다.', 'error');
-  if (!confirm('직업을 삭제할까요?')) return;
+  if (!(await appConfirm('직업을 삭제할까요?'))) return;
   await dbDelete('jobs', { id });
   await reloadAndRender();
 }
@@ -2242,7 +2461,7 @@ async function saveChar() {
 async function deleteChar(id) {
   const used = state.partyMembers.some(v => v.character_id === id);
   if (used) return showToast('파티에 포함된 캐릭터는 먼저 파티에서 제거해주세요.', 'error');
-  if (!confirm('캐릭터를 삭제할까요?')) return;
+  if (!(await appConfirm('캐릭터를 삭제할까요?'))) return;
   await dbDelete('characters', { id });
   await reloadAndRender();
 }
@@ -2314,7 +2533,7 @@ async function saveRaid() {
 async function deleteRaid(id) {
   const used = state.parties.some(v => v.raid_id === id);
   if (used) return showToast('파티가 연결된 레이드는 삭제할 수 없습니다.', 'error');
-  if (!confirm('레이드를 삭제할까요?')) return;
+  if (!(await appConfirm('레이드를 삭제할까요?'))) return;
   await dbDelete('raids', { id });
   await reloadAndRender();
 }
@@ -2326,6 +2545,8 @@ function createEmptyPartySlots(size) {
     character_id: '',
     slot_order: i + 1
   }));
+  state.pendingCharacterRemovalMap = {};
+  state.assignmentPrompt = null;
 }
 function resetPartySlotsBySize() {
   const size = Number(document.getElementById('partySize').value || 4);
@@ -2339,12 +2560,27 @@ function openPartyModal(defaultRaidId = '') {
   document.getElementById('partyName').value = '';
   document.getElementById('partyError').textContent = '';
   document.getElementById('partySize').value = '4';
+  state.currentPartyPlayerFilter = '';
   renderRaidOptions(defaultRaidId);
   createEmptyPartySlots(4);
+  renderPartyPlayerOptions();
   renderPartySlots();
   renderQuickPick();
   openModal('partyModal');
 }
+function renderPartyPlayerOptions(selectedId = state.currentPartyPlayerFilter || '') {
+  const select = document.getElementById('partyPlayerFilter');
+  if (!select) return;
+  select.innerHTML = `<option value="">플레이어를 선택해주세요</option>` +
+    state.players.map(player => `
+      <option value="${player.id}" ${selectedId === player.id ? 'selected' : ''}>${player.name}</option>
+    `).join('');
+}
+function setPartyPlayerFilter(playerId) {
+  state.currentPartyPlayerFilter = playerId || '';
+  renderQuickPick();
+}
+
 function editParty(id) {
   const party = getParty(id);
   if (!party) return;
@@ -2353,9 +2589,11 @@ function editParty(id) {
   document.getElementById('partyName').value = party.name || '';
   document.getElementById('partyError').textContent = '';
   document.getElementById('partySize').value = String(party.party_size || 4);
+  state.currentPartyPlayerFilter = '';
   renderRaidOptions(party.raid_id);
 
   createEmptyPartySlots(party.party_size || 4);
+  renderPartyPlayerOptions();
   const members = getPartyMembers(id);
   members.forEach((m, idx) => {
     if (state.editingPartyMemberSlots[idx]) {
@@ -2401,8 +2639,12 @@ function renderPartySlots() {
   }).join('');
 }
 function clearPartySlot(index) {
+  const removedCharacterId = state.editingPartyMemberSlots[index]?.character_id;
   state.editingPartyMemberSlots[index].player_id = '';
   state.editingPartyMemberSlots[index].character_id = '';
+  if (removedCharacterId && state.pendingCharacterRemovalMap[removedCharacterId]) {
+    delete state.pendingCharacterRemovalMap[removedCharacterId];
+  }
   renderPartySlots();
   renderQuickPick();
 }
@@ -2417,7 +2659,75 @@ function getUsedCharacterIdsInCompletedSchedules() {
     state.partyMembers.filter(v => completedPartyIds.has(v.party_id)).map(v => v.character_id).filter(Boolean)
   );
 }
-function addCharacterToParty(playerId, characterId) {
+function getPendingRemovalMemberIds() {
+  return new Set(Object.values(state.pendingCharacterRemovalMap || {}).flat());
+}
+function getCharacterPartyUsages(characterId, options = {}) {
+  const { excludeEditingParty = true } = options;
+  const pendingRemovalIds = getPendingRemovalMemberIds();
+
+  return state.partyMembers
+    .filter(m => {
+      if (m.character_id !== characterId) return false;
+      if (pendingRemovalIds.has(m.id)) return false;
+      if (excludeEditingParty && state.editingPartyId && m.party_id === state.editingPartyId) return false;
+      return true;
+    })
+    .map(member => {
+      const party = getParty(member.party_id);
+      const raid = party ? getRaid(party.raid_id) : null;
+      return { member, party, raid };
+    })
+    .sort((a, b) => {
+      const raidDiff = (a.raid?.sort_order ?? 999) - (b.raid?.sort_order ?? 999);
+      if (raidDiff !== 0) return raidDiff;
+      return (a.party?.name || '').localeCompare(b.party?.name || '', 'ko');
+    });
+}
+function findCharacterPartyUsage(characterId) {
+  return getCharacterPartyUsages(characterId)[0] || null;
+}
+function renderAssignmentModal() {
+  const wrap = document.getElementById('assignmentModalList');
+  if (!wrap) return;
+
+  const prompt = state.assignmentPrompt;
+  if (!prompt?.usages?.length) {
+    wrap.innerHTML = '<div class="assignment-empty">배치된 레이드 정보가 없습니다.</div>';
+    return;
+  }
+
+  wrap.innerHTML = prompt.usages.map(usage => {
+    const selected = prompt.selectedMemberId === usage.member.id;
+    return `
+      <div class="assignment-option ${selected ? 'selected' : ''}" onclick="selectAssignmentRemoval('${usage.member.id}')">
+        <div class="assignment-option-top">
+          <div class="assignment-radio"></div>
+          <div>
+            <div class="assignment-raid">${usage.raid?.name || '레이드 미지정'}</div>
+            <div class="assignment-party">${usage.party?.name || '파티 미지정'}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+function selectAssignmentRemoval(memberId) {
+  if (!state.assignmentPrompt) return;
+  state.assignmentPrompt.selectedMemberId = memberId;
+  renderAssignmentModal();
+}
+function openAssignmentModal(playerId, characterId, usages) {
+  state.assignmentPrompt = {
+    playerId,
+    characterId,
+    usages,
+    selectedMemberId: usages[0]?.member?.id || null
+  };
+  renderAssignmentModal();
+  openModal('assignmentModal');
+}
+function finalizeAddCharacterToParty(playerId, characterId) {
   const idx = state.editingPartyMemberSlots.findIndex(v => !v.character_id);
   if (idx < 0) return showToast('빈 슬롯이 없습니다.', 'error');
   state.editingPartyMemberSlots[idx].player_id = playerId;
@@ -2425,31 +2735,85 @@ function addCharacterToParty(playerId, characterId) {
   renderPartySlots();
   renderQuickPick();
 }
+function confirmAssignmentSelection(withRemoval) {
+  const prompt = state.assignmentPrompt;
+  if (!prompt) return;
+
+  if (withRemoval) {
+    if (!prompt.selectedMemberId) {
+      return showToast('제외할 레이드를 선택해주세요.', 'info');
+    }
+    state.pendingCharacterRemovalMap[prompt.characterId] = [prompt.selectedMemberId];
+  } else if (state.pendingCharacterRemovalMap[prompt.characterId]) {
+    delete state.pendingCharacterRemovalMap[prompt.characterId];
+  }
+
+  closeModal('assignmentModal');
+  finalizeAddCharacterToParty(prompt.playerId, prompt.characterId);
+  state.assignmentPrompt = null;
+}
+function addCharacterToParty(playerId, characterId) {
+  if (getUsedCharacterIdsInEditing().has(characterId)) {
+    return showToast('이미 현재 파티 슬롯에 선택된 캐릭터입니다.', 'info');
+  }
+
+  const usages = getCharacterPartyUsages(characterId);
+  if (usages.length > 3) {
+    return openAssignmentModal(playerId, characterId, usages);
+  }
+
+  finalizeAddCharacterToParty(playerId, characterId);
+}
 function renderQuickPick() {
   const wrap = document.getElementById('quickPickWrap');
   const usedInEditing = getUsedCharacterIdsInEditing();
-  const usedCompleted = getUsedCharacterIdsInCompletedSchedules();
   const raidId = document.getElementById('partyRaid').value;
   const raid = getRaid(raidId);
 
-  wrap.innerHTML = state.players.map(player => {
-    const chars = state.characters.filter(c => c.player_id === player.id).sort((a,b)=>(b.level ?? 0)-(a.level ?? 0));
+  renderPartyPlayerOptions();
+
+  const selectedPlayerId = state.currentPartyPlayerFilter || '';
+  if (!selectedPlayerId) {
+    wrap.innerHTML = `<div class="quick-pick-empty">플레이어를 먼저 선택해주세요.<br>선택한 플레이어의 캐릭터만 표시됩니다.</div>`;
+    return;
+  }
+
+  const targetPlayers = state.players.filter(player => player.id === selectedPlayerId);
+  wrap.innerHTML = targetPlayers.map(player => {
+    const chars = state.characters
+      .filter(c => c.player_id === player.id)
+      .sort((a,b) => {
+        const aLevelOut = raid ? (a.level < raid.min_level || a.level > raid.max_level) : false;
+        const bLevelOut = raid ? (b.level < raid.min_level || b.level > raid.max_level) : false;
+        if (aLevelOut !== bLevelOut) return aLevelOut ? 1 : -1;
+
+        const aUsed = !!findCharacterPartyUsage(a.id);
+        const bUsed = !!findCharacterPartyUsage(b.id);
+        if (aUsed !== bUsed) return aUsed ? 1 : -1;
+
+        return (b.level ?? 0) - (a.level ?? 0);
+      });
+
     return `
       <div class="player-group">
         <div class="player-group-head">${player.name} (${chars.length})</div>
         <div class="player-group-body">
           ${chars.map(ch => {
             const job = getJob(ch.job_id);
-            const disabled = usedInEditing.has(ch.id);
+            const selected = usedInEditing.has(ch.id);
             const levelOut = raid ? (ch.level < raid.min_level || ch.level > raid.max_level) : false;
+            const usages = getCharacterPartyUsages(ch.id);
             return `
-              <div class="pick-char ${disabled ? 'disabled' : ''}" onclick="${disabled ? '' : `addCharacterToParty('${player.id}','${ch.id}')`}">
+              <div class="pick-char ${selected ? 'disabled' : ''}" onclick="${selected ? '' : `addCharacterToParty('${player.id}','${ch.id}')`}">
                 ${getRoleIcon(ch.battle_role || 'dealer')}
                 <div class="pick-char-main">
                   <div class="pick-char-name">${ch.name}</div>
-                  <div class="pick-char-sub">${job ? job.name : '직업 미지정'} · Lv.${ch.level}${levelOut ? ' · 범위밖' : ''}</div>
+                  <div class="pick-char-sub">${job ? job.name : '직업 미지정'} · Lv.${ch.level}</div>
                 </div>
-                ${usedCompleted.has(ch.id) ? `<span class="pick-char-used">완료 사용</span>` : ''}
+                <div class="pick-char-assignments">
+                  ${usages.length ? usages.map(usage => `<span class="pick-char-assignment">${usage.raid?.name || '레이드'} • ${usage.party?.name || '-'}</span>`).join('') : '<span class="pick-char-assignment">미배치</span>'}
+                </div>
+                <span class="pick-char-recommend ${levelOut ? 'bad' : 'good'}">${levelOut ? '비추천' : '추천'}</span>
               </div>
             `;
           }).join('')}
@@ -2483,6 +2847,11 @@ async function saveParty() {
     partyId = inserted?.[0]?.id;
   }
 
+  const pendingRemovalIds = [...new Set(Object.values(state.pendingCharacterRemovalMap || {}).flat())];
+  for (const memberId of pendingRemovalIds) {
+    await dbDelete('party_members', { id: memberId });
+  }
+
   for (let i = 0; i < validMembers.length; i++) {
     await dbInsert('party_members', {
       party_id: partyId,
@@ -2492,13 +2861,16 @@ async function saveParty() {
     });
   }
 
+  state.pendingCharacterRemovalMap = {};
+  state.assignmentPrompt = null;
   closeModal('partyModal');
+  suppressRealtime(1200);
   await reloadAndRender();
 }
 async function deleteParty(id) {
   const used = state.scheduleSlots.some(v => v.party_id === id);
   if (used) return showToast('스케줄에 등록된 파티는 먼저 일정을 삭제해주세요.', 'error');
-  if (!confirm('파티를 삭제할까요?')) return;
+  if (!(await appConfirm('파티를 삭제할까요?'))) return;
 
   const members = getPartyMembers(id);
   for (const m of members) await dbDelete('party_members', { id: m.id });
@@ -2512,7 +2884,7 @@ function duplicateParty(partyId) {
   const members = getPartyMembers(partyId);
 
   state.editingPartyId = null;
-  document.getElementById('partyModalTitle').textContent = '파티 복제';
+  document.getElementById('partyModalTitle').textContent = '이번 주 파티로 복사';
   document.getElementById('partyName').value = `${party.name} 복사본`;
   document.getElementById('partyError').textContent = '';
   document.getElementById('partySize').value = String(party.party_size || 4);
@@ -2544,10 +2916,10 @@ function openScheduleModal(slotId = null, presetBoardId = null, presetDay = null
     renderBoardOptions(slot.board_id || 'board-1');
     
     const party = getParty(slot.party_id);
-    const raidId = party?.raid_id || '';
+    const raidId = isEmptyTimeParty(party) ? '__empty_time__' : (party?.raid_id || '');
     
     renderSchedRaidOptions(raidId);
-    renderSchedPartyOptions(slot.party_id, raidId);
+    renderSchedPartyOptions(isEmptyTimeParty(party) ? '__empty_time_party__' : slot.party_id, raidId);
     
     document.getElementById('schedDay').value = slot.day_of_week;
     document.getElementById('schedStart').value = normalizeTime(slot.start_time);
@@ -2581,11 +2953,19 @@ async function saveSchedule() {
 
   if (!boardId) return errorEl.textContent = '스케줄표를 선택해주세요.';
   if (!raidId) return errorEl.textContent = '레이드를 선택해주세요.';
-  if (!partyId) return errorEl.textContent = '파티를 선택해주세요.';
   if (!start || !end) return errorEl.textContent = '시간을 입력해주세요.';
   if (start === end) return errorEl.textContent = '시작 시간과 종료 시간이 같을 수 없습니다.';
 
-  const payload = { board_id: boardId, party_id: partyId, day_of_week: day, start_time: start, end_time: end };
+  let finalPartyId = partyId;
+  if (raidId === '__empty_time__') {
+    const emptyParty = await ensureEmptyTimeParty();
+    if (!emptyParty?.id) return errorEl.textContent = '빈 일정 시간을 생성하지 못했습니다.';
+    finalPartyId = emptyParty.id;
+  } else if (!partyId) {
+    return errorEl.textContent = '파티를 선택해주세요.';
+  }
+
+  const payload = { board_id: boardId, party_id: finalPartyId, day_of_week: day, start_time: start, end_time: end };
   if (state.editingScheduleId) await dbUpdate('schedule_slots', { id: state.editingScheduleId }, payload);
   else await dbInsert('schedule_slots', { ...payload, is_completed:false });
 
@@ -2600,10 +2980,34 @@ function openScheduleDetail(slotId) {
   state.currentDetailSlotId = slotId;
   const party = getParty(slot.party_id);
   const raid = party ? getRaid(party.raid_id) : null;
-  const members = party ? getPartyMembers(party.id) : [];
+  const isEmptyTime = isEmptyTimeParty(party);
+  const members = (!isEmptyTime && party) ? getPartyMembers(party.id) : [];
   const board = getBoard(slot.board_id || 'board-1');
 
-  document.getElementById('detailTitle').textContent = `${raid?.name || '상세'} 상세`;
+  document.getElementById('detailTitle').textContent = `${isEmptyTime ? '빈 일정 시간' : (raid?.name || '상세')} 상세`;
+
+  if (isEmptyTime) {
+    document.getElementById('detailBody').innerHTML = `
+      <div class="detail-box">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <div>
+            <div style="font-size:17px;font-weight:800">Zzz</div>
+            <div style="font-size:12px;color:var(--sub);margin-top:6px">${board?.title || '스케줄표'}</div>
+            <div style="font-size:12px;color:var(--sub);margin-top:4px">${DAY_NAMES[slot.day_of_week]} · ${normalizeTime(slot.start_time)} ~ ${normalizeTime(slot.end_time)}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+            <div class="detail-status ${slot.is_completed ? 'done' : 'todo'}">${slot.is_completed ? '완료' : '진행 전'}</div>
+            <button class="btn ${slot.is_completed ? 'btn-ghost' : 'btn-primary'} btn-sm" onclick="toggleScheduleComplete('${slot.id}', ${slot.is_completed ? 'false' : 'true'})">
+              ${slot.is_completed ? '완료 해제' : '완료하기'}
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="empty-detail-note">빈 일정 시간은 공용 일정으로만 표시되며, 플레이어/캐릭터/파티원 정보는 표시하지 않습니다.</div>
+    `;
+    openModal('detailModal');
+    return;
+  }
 
   document.getElementById('detailBody').innerHTML = `
     <div class="detail-box">
@@ -2658,7 +3062,7 @@ function editScheduleFromDetail() {
 }
 async function deleteScheduleFromDetail() {
   if (!state.currentDetailSlotId) return;
-  if (!confirm('일정을 삭제할까요?')) return;
+  if (!(await appConfirm('일정을 삭제할까요?'))) return;
   const slotId = state.currentDetailSlotId;
 
   const attends = state.attendance.filter(v => v.schedule_slot_id === slotId);
@@ -2695,7 +3099,7 @@ async function saveMemo() {
   await reloadAndRender();
 }
 async function deleteMemo(id) {
-  if (!confirm('메모를 삭제할까요?')) return;
+  if (!(await appConfirm('메모를 삭제할까요?'))) return;
   await dbDelete('weekly_player_notes', { id });
   await reloadAndRender();
 }
@@ -2747,17 +3151,37 @@ async function onScheduleDrop(e, boardId, day, startTime) {
   const slot = state.scheduleSlots.find(v => v.id === slotId);
   if (!slot) return;
 
+  const before = {
+    board_id: slot.board_id || 'board-1',
+    day_of_week: slot.day_of_week,
+    start_time: normalizeTime(slot.start_time),
+    end_time: normalizeTime(slot.end_time)
+  };
+
   let duration = timeToMinutes(normalizeTime(slot.end_time)) - timeToMinutes(normalizeTime(slot.start_time));
   if (duration <= 0) duration += 1440;
 
   const newStart = normalizeTime(startTime);
   const newEnd = minutesToTime((timeToMinutes(newStart) + duration) % 1440);
 
-  await dbUpdate('schedule_slots', { id: slotId }, {
+  slot.board_id = boardId;
+  slot.day_of_week = day;
+  slot.start_time = newStart;
+  slot.end_time = newEnd;
+  renderScheduleBoards();
+  renderAssignedPartyPanel();
+
+  suppressRealtime();
+  const result = await dbUpdate('schedule_slots', { id: slotId }, {
     board_id: boardId, day_of_week: day, start_time: newStart, end_time: newEnd
   });
 
-  await reloadAndRender();
+  if (!result) {
+    Object.assign(slot, before);
+    renderScheduleBoards();
+    renderAssignedPartyPanel();
+    showToast('일정 이동에 실패해 원래 위치로 되돌렸습니다.', 'error');
+  }
 }
 
 document.addEventListener('dragend', () => {
@@ -2777,11 +3201,14 @@ async function reloadAndRender() {
 }
 
 function scheduleRealtimeReload(message = '') {
+  if (isRealtimeSuppressed()) return;
+
   clearTimeout(realtimeReloadTimer);
   realtimeReloadTimer = setTimeout(async () => {
+    if (isRealtimeSuppressed()) return;
     await reloadAndRender();
     if (message) showToast(message, 'info');
-  }, 200);
+  }, 350);
 }
 
 async function subscribeRealtime() {
