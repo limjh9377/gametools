@@ -755,12 +755,12 @@ a{text-decoration:none;color:inherit}
 .gold-character-head{padding-bottom:12px;border-bottom:1px solid var(--line-soft)}
 .gold-raid-row{background:#f8fafc;border-color:#edf2f7}
 .gold-raid-row:hover{background:#fff;border-color:#cbd5e1}
-.gold-raid-row.done,.gold-raid-row.material{opacity:.58;filter:grayscale(.18);background:#f7fafc;border-color:#d8dde3;color:#64748b}
+.gold-raid-row.done,.gold-raid-row.material{opacity:.78;filter:grayscale(.08);background:#f1f5f9;border-color:#cbd5e1;color:#475569}
 .gold-raid-row.out{opacity:.42;filter:grayscale(.35)}
-.gold-raid-row.done:hover,.gold-raid-row.material:hover,.gold-raid-row.out:hover{opacity:.76}
+.gold-raid-row.done:hover,.gold-raid-row.material:hover{opacity:.88}.gold-raid-row.out:hover{opacity:.76}
 .gold-raid-row.done .gold-raid-schedule,.gold-raid-row.material .gold-raid-schedule{display:none}
-.gold-reward-status{font-size:12px;font-weight:950;color:#94a3b8;text-align:right;white-space:nowrap}
-.gold-raid-row.done .gold-raid-title,.gold-raid-row.material .gold-raid-title,.gold-raid-row.done .gold-raid-reward,.gold-raid-row.material .gold-raid-reward{color:#94a3b8}
+.gold-reward-status{font-size:12px;font-weight:950;color:#475569;text-align:right;white-space:nowrap}
+.gold-raid-row.done .gold-raid-title,.gold-raid-row.material .gold-raid-title,.gold-raid-row.done .gold-raid-reward,.gold-raid-row.material .gold-raid-reward{color:#64748b}
 .gold-raid-actions .btn:disabled{opacity:.55;cursor:wait}
 @media (max-width:1180px){.gold-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.gold-main-stack{grid-template-columns:1fr}}
 @media (max-width:720px){.gold-summary-grid{grid-template-columns:1fr}}
@@ -3408,15 +3408,17 @@ function renderGoldSummaryCards() {
   const chars = getSelectedGoldCharacters();
   const rewards = getWeekRewards().filter(v => chars.some(ch => ch.id === v.character_id));
   const goldDone = rewards.filter(v => v.reward_type === 'gold').length;
-  const materialDone = rewards.filter(v => v.reward_type === 'material').length;
-  const completedTotal = rewards.length;
   const totalGoldSlots = chars.length * 3;
-  const remaining = Math.max(0, totalGoldSlots - goldDone);
+  const remainingSlots = Math.max(0, totalGoldSlots - goldDone);
+  const currentGold = rewards
+    .filter(v => v.reward_type === 'gold')
+    .reduce((sum, reward) => sum + Number(getRaid(reward.raid_id)?.gold_reward || 0), 0);
+  const remainingGold = chars.reduce((sum, ch) => sum + getCharacterRemainingGold(ch.id), 0);
   wrap.innerHTML = `
     <div class="gold-summary-card"><div class="gold-summary-label">표시 캐릭터</div><div class="gold-summary-value">${chars.length}</div><div class="gold-summary-sub">선택 유저/검색 필터 기준</div></div>
-    <div class="gold-summary-card"><div class="gold-summary-label">골드 보상 완료</div><div class="gold-summary-value">${goldDone}/${totalGoldSlots}</div><div class="gold-summary-sub">남은 골드 레이드 ${remaining}개</div></div>
-    <div class="gold-summary-card"><div class="gold-summary-label">골드 O</div><div class="gold-summary-value">${goldDone}</div><div class="gold-summary-sub">골드 받고 완료한 레이드</div></div>
-    <div class="gold-summary-card"><div class="gold-summary-label">골드 X</div><div class="gold-summary-value">${materialDone}</div><div class="gold-summary-sub">재료만 받고 완료한 레이드</div></div>
+    <div class="gold-summary-card"><div class="gold-summary-label">골드 보상 완료</div><div class="gold-summary-value">${goldDone}/${totalGoldSlots}</div><div class="gold-summary-sub">남은 골드 레이드 ${remainingSlots}개</div></div>
+    <div class="gold-summary-card"><div class="gold-summary-label">현재 획득 골드</div><div class="gold-summary-value">${currentGold.toLocaleString()}골</div><div class="gold-summary-sub">골드 완료 체크 기준</div></div>
+    <div class="gold-summary-card"><div class="gold-summary-label">남은 획득 골드</div><div class="gold-summary-value">${remainingGold.toLocaleString()}골</div><div class="gold-summary-sub">미완료 스케줄 중 받을 수 있는 골드</div></div>
   `;
 }
 function renderGoldCharacterCards() {
@@ -3464,10 +3466,10 @@ function renderGoldCharacterCards() {
             return `
               <div class="gold-raid-row ${rowClass} ${levelOk ? '' : 'out'}">
                 <div class="gold-raid-main">
-                  <div class="gold-raid-title">${reward ? '✓' : (raid.icon ? escapeGoldHtml(raid.icon) : '🛡')} ${escapeGoldHtml(raid.name)}</div>
+                  <div class="gold-raid-title">${raid.icon ? escapeGoldHtml(raid.icon) : '🛡'} ${escapeGoldHtml(raid.name)}</div>
                   ${scheduleLine}
                 </div>
-                <div class="gold-raid-reward">${reward ? `<span class="gold-reward-status">골드 ${isGold ? 'O' : 'X'}</span>` : `${Number(raid.gold_reward || 0).toLocaleString()}골`}</div>
+                <div class="gold-raid-reward">${reward ? `<span class="gold-reward-status">✅ 골드 ${isGold ? 'O' : 'X'}</span>` : `${Number(raid.gold_reward || 0).toLocaleString()}골`}</div>
                 <div class="gold-raid-actions">
                   ${reward
                     ? `<button class="btn btn-ghost" onclick="clearCharacterRaidRewardFromButton(this,'${ch.id}','${raid.id}')">해제</button>`
