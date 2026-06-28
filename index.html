@@ -674,6 +674,94 @@ a{text-decoration:none;color:inherit}
   padding:12px;
   background:transparent;
 }
+
+
+
+/* =========================
+   캐릭터 골드체크 확장
+   ========================= */
+.gold-page{max-width:1320px}
+.gold-page-header{margin-bottom:12px}
+.gold-page-header h1{font-size:24px;letter-spacing:-.03em}
+.gold-page-header p{font-size:13px;color:var(--sub)}
+.gold-layout{display:block}
+.gold-control-line{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;padding:0 2px}
+.gold-control-main{display:flex;align-items:center;gap:8px;flex:1;min-width:360px}
+.gold-control-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.gold-control-label{font-size:12px;font-weight:900;color:var(--sub);white-space:nowrap}
+.gold-check-label{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:900;color:var(--sub);white-space:nowrap}
+.gold-control-line .form-control{height:38px;width:auto;min-width:164px;background:#fff}
+.gold-control-line .gold-search-input{min-width:260px;max-width:430px;flex:1}
+.gold-summary-line{display:flex;align-items:center;gap:0;flex-wrap:wrap;margin:6px 0 18px;padding:12px 16px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:rgba(255,255,255,.55);color:#475569;font-size:13px;font-weight:800}
+.gold-summary-line span{position:relative;padding:0 18px 0 0;margin-right:18px;white-space:nowrap}
+.gold-summary-line span:not(:last-child)::after{content:'';position:absolute;right:0;top:50%;width:1px;height:14px;background:#cbd5e1;transform:translateY(-50%)}
+.gold-summary-line b{font-size:16px;color:#0f172a}
+.gold-main-stack{display:flex;flex-direction:column;gap:0}
+.gold-character-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.gold-character-titlebox{min-width:0}
+.gold-character-name{font-size:18px;font-weight:950;letter-spacing:-.03em;color:#0f172a}
+.gold-character-meta{font-size:12px;color:var(--sub);margin-top:4px}
+.gold-progress{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--sub);font-weight:850;white-space:nowrap}
+.gold-progress-pill{display:inline-flex;align-items:center;justify-content:center;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:950;background:#ecfdf5;color:#047857;border:1px solid #a7f3d0}
+.gold-progress-pill.warn{background:#fff7ed;color:#ea580c;border-color:#fed7aa}
+.gold-progress-pill.done{background:#eef2f5;color:#64748b;border-color:#d8dde3}
+.gold-progress-text{color:#475569}
+.gold-raid-list{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.gold-raid-row{display:grid;grid-template-columns:minmax(220px,1fr) 98px auto;align-items:center;gap:12px;min-height:42px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.82);border:1px solid #e5eaf1}
+.gold-raid-row.done{background:#f7fafc;color:#64748b;border-color:#d8dde3}
+.gold-raid-row.material{background:#fff7ed;border-color:#fed7aa}
+.gold-raid-row.out{opacity:.62}
+.gold-raid-main{display:flex;align-items:center;gap:12px;min-width:0;flex-wrap:wrap}
+.gold-raid-title{font-size:13px;font-weight:950;color:#111827;white-space:nowrap;min-width:126px}
+.gold-raid-row.done .gold-raid-title{color:#64748b}
+.gold-raid-schedule{font-size:12px;font-weight:850;color:#2563eb;white-space:nowrap}
+.gold-raid-reward{text-align:right;font-size:12px;font-weight:950;color:#0f172a;white-space:nowrap}
+.gold-raid-row.done .gold-raid-reward{color:#64748b}
+.gold-raid-actions{display:flex;align-items:center;justify-content:flex-end;gap:5px;flex-wrap:nowrap}
+.gold-raid-actions .btn{padding:5px 8px;font-size:11px;border-radius:8px;min-width:40px}
+.gold-action-active{box-shadow:inset 0 0 0 2px rgba(15,23,42,.12)}
+.gold-empty{padding:34px 18px;border:1.5px dashed #cbd5e1;border-radius:16px;text-align:center;color:#94a3b8;background:rgba(255,255,255,.55);font-weight:900}
+.gold-empty.small{padding:16px;margin-top:10px;font-size:12px}
+.gold-reward-settings{margin-top:24px;padding:12px 2px;border-top:1px solid var(--line)}
+.gold-reward-settings summary{cursor:pointer;font-size:13px;font-weight:950;color:var(--sub);list-style:none;display:inline-flex;align-items:center;gap:6px}
+.gold-reward-settings summary::before{content:'▸';font-size:12px;color:#94a3b8}
+.gold-reward-settings[open] summary::before{content:'▾'}
+.gold-reward-settings summary::-webkit-details-marker{display:none}
+.gold-reward-help{font-size:12px;color:var(--sub);line-height:1.45;margin:10px 0 8px}
+.gold-rate-layout{display:grid;grid-template-columns:minmax(0,620px) minmax(280px,1fr);gap:16px;align-items:start}
+.gold-rate-help{font-size:12px;color:var(--sub);line-height:1.55}
+.gold-side-card{padding:16px;border-radius:18px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow-sm)}
+.gold-side-title{font-size:15px;font-weight:900;margin-bottom:10px}
+.gold-calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.gold-calc-result{padding:12px;border-radius:13px;background:#f8fafc;border:1px solid var(--line);margin-top:10px}
+.gold-calc-result strong{font-size:18px}
+.gold-raid-setting-row{display:grid;grid-template-columns:1fr 96px auto;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line-soft)}
+.gold-raid-setting-row:first-child{border-top:none}
+.gold-raid-setting-name{font-size:12px;font-weight:800;color:#111827;min-width:0;word-break:keep-all}
+.gold-schedule-list,.gold-week-history{display:none}
+.gold-week-chip,.gold-schedule-chip{display:none}
+@media (max-width:1180px){.gold-rate-layout{grid-template-columns:1fr}.gold-raid-row{grid-template-columns:minmax(180px,1fr) 90px auto}}
+@media (max-width:820px){.gold-control-main{min-width:100%;flex-wrap:wrap}.gold-control-line .gold-search-input{max-width:none}.gold-summary-line{gap:8px}.gold-summary-line span{margin-right:10px;padding-right:10px}.gold-character-head{flex-direction:column}.gold-progress{justify-content:flex-start}.gold-raid-row{grid-template-columns:1fr}.gold-raid-reward{text-align:left}.gold-raid-actions{justify-content:flex-start}.gold-calc-grid{grid-template-columns:1fr}}
+
+/* 캐릭터 골드체크: 카드형 2열 정리 */
+.gold-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+.gold-summary-card{padding:15px;border-radius:16px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow-sm)}
+.gold-summary-label{font-size:12px;color:var(--sub);font-weight:800;margin-bottom:8px}
+.gold-summary-value{font-size:24px;font-weight:900;color:var(--text)}
+.gold-summary-sub{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.45}
+.gold-main-stack{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:stretch}
+.gold-main-stack > .gold-empty{grid-column:1 / -1}
+.gold-character-card{padding:16px;border-radius:18px;border:1px solid var(--line);background:#fff;box-shadow:var(--shadow-sm);min-width:0;height:100%;display:flex;flex-direction:column}
+.gold-character-head{padding-bottom:12px;border-bottom:1px solid var(--line-soft)}
+.gold-raid-row{background:#f8fafc;border-color:#edf2f7}
+.gold-raid-row:hover{background:#fff;border-color:#cbd5e1}
+.gold-raid-row.done,.gold-raid-row.material{opacity:.52;filter:grayscale(.22)}
+.gold-raid-row.out{opacity:.42;filter:grayscale(.35)}
+.gold-raid-row.done:hover,.gold-raid-row.material:hover,.gold-raid-row.out:hover{opacity:.76}
+.gold-raid-row.done .gold-raid-schedule,.gold-raid-row.material .gold-raid-schedule{display:none}
+@media (max-width:1180px){.gold-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.gold-main-stack{grid-template-columns:1fr}}
+@media (max-width:720px){.gold-summary-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -685,6 +773,8 @@ a{text-decoration:none;color:inherit}
   </div>
   <div class="nav-tabs">
     <button class="nav-tab active" id="tab-schedule" onclick="switchTab('schedule')">스케줄</button>
+    <button class="nav-tab" id="tab-goldcheck" onclick="switchTab('goldcheck')">캐릭터 골드체크</button>
+    <button class="nav-tab" id="tab-goldrate" onclick="switchTab('goldrate')">골드 시세 계산기</button>
     <button class="nav-tab" id="tab-parties" onclick="switchTab('parties')">파티 목록</button>
     <button class="nav-tab" id="tab-characters" onclick="switchTab('characters')">캐릭터 관리</button>
     <button class="nav-tab" id="tab-settings" onclick="switchTab('settings')">설정</button>
@@ -733,6 +823,90 @@ a{text-decoration:none;color:inherit}
         </div>
 
         <div class="schedule-board-stack" id="scheduleBoardsWrap"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<section class="tab-content" id="content-goldcheck">
+  <div class="page gold-page">
+    <div class="page-header gold-page-header">
+      <h1>캐릭터 골드체크</h1>
+      <p>플레이어를 선택하면 해당 유저 캐릭터의 스케줄 등록 레이드 기준으로 골드 3회를 관리합니다.</p>
+    </div>
+
+    <div class="gold-control-line">
+      <div class="gold-control-main">
+        <label class="gold-control-label">유저</label>
+        <select class="form-control" id="goldPlayerFilter" onchange="setGoldPlayerFilter(this.value)"></select>
+        <input class="form-control gold-search-input" id="goldCharacterSearch" placeholder="캐릭터명 / 직업 검색" oninput="setGoldCharacterSearch(this.value)">
+      </div>
+      <div class="gold-control-actions">
+        <label class="gold-check-label">
+          <input type="checkbox" id="goldHideDone" onchange="toggleGoldHideDone(this.checked)">
+          3/3 완료 숨김
+        </label>
+        <button class="btn btn-ghost btn-sm" onclick="renderGoldCheck()">새로고침</button>
+        <button class="btn btn-danger btn-sm" onclick="resetWeeklyRewards()">체크 초기화</button>
+      </div>
+    </div>
+
+    <div class="gold-summary-grid" id="goldSummaryCards"></div>
+
+    <div class="gold-layout">
+      <div class="gold-main-stack" id="goldCharacterCards"></div>
+    </div>
+
+    <details class="gold-reward-settings">
+      <summary>레이드 골드 보상 설정</summary>
+      <div class="gold-reward-help">레이드별 골드를 입력하면 캐릭터별 획득/남은 골드가 합산됩니다.</div>
+      <div id="goldRaidRewardSettings"></div>
+    </details>
+  </div>
+</section>
+
+<section class="tab-content" id="content-goldrate">
+  <div class="page">
+    <div class="page-header">
+      <h1>골드 시세 계산기</h1>
+      <p>주간 골드체크와 별개로 현재 시세 기준 거래 금액과 실수령 골드를 계산합니다.</p>
+    </div>
+
+    <div class="gold-rate-layout">
+      <div class="card gold-side-card">
+        <div class="gold-side-title">골드 시세 계산기</div>
+        <div class="gold-calc-grid">
+          <div class="form-group">
+            <label>기준 골드(만골)</label>
+            <input type="number" class="form-control" id="goldRateBase" min="1" step="1" oninput="renderGoldCalculator()">
+          </div>
+          <div class="form-group">
+            <label>기준 금액(만원)</label>
+            <input type="number" class="form-control" id="goldRatePrice" min="0" step="0.1" oninput="renderGoldCalculator()">
+          </div>
+          <div class="form-group">
+            <label>거래 골드(만골)</label>
+            <input type="number" class="form-control" id="goldTradeAmount" min="0" step="1" value="140" oninput="renderGoldCalculator()">
+          </div>
+          <div class="form-group">
+            <label>수수료율(%)</label>
+            <input type="number" class="form-control" id="goldFeeRate" min="0" max="100" step="0.1" oninput="renderGoldCalculator()">
+          </div>
+        </div>
+        <div class="gold-calc-result" id="goldCalcResult"></div>
+        <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn btn-blue btn-sm" onclick="saveGoldRateSettings()">시세 저장</button>
+        </div>
+      </div>
+
+      <div class="card gold-side-card">
+        <div class="gold-side-title">사용 예시</div>
+        <div class="gold-rate-help">
+          <b>100:15</b>는 100만 골드가 15만 원이라는 뜻입니다.<br>
+          거래 골드를 만골 단위로 입력하면 결제/판매 금액과 수수료 적용 후 실수령 골드를 바로 확인할 수 있습니다.
+        </div>
       </div>
     </div>
   </div>
@@ -1169,6 +1343,12 @@ let state = {
   scheduleSlots: [],
   attendance: [],
   weeklyNotes: [],
+  weeklyRaidRewards: [],
+  goldRateSetting: { setting_key:'default', base_gold_manha:100, price_per_base_manwon:15, fee_rate:0.05 },
+  currentGoldPlayerFilter: '',
+  currentGoldWeekLabel: '',
+  currentGoldHideDone: false,
+  currentGoldCharacterSearch: '',
   timeSlots: [],
   scheduleBoards: [],
   toolLinks: [],
@@ -1548,7 +1728,7 @@ async function dbDelete(table, match) {
 async function loadAllData() {
   const [
     players, jobs, characters, raids, parties, partyMembers,
-    scheduleSlots, attendance, notes, settings
+    scheduleSlots, attendance, notes, settings, weeklyRaidRewards, goldRateSettings
   ] = await Promise.all([
     dbFetch('players', { order: { col:'created_at', asc:true } }),
     dbFetch('jobs', { order: { col:'sort_order', asc:true } }),
@@ -1559,7 +1739,9 @@ async function loadAllData() {
     dbFetch('schedule_slots', { order: { col:'day_of_week', asc:true } }),
     dbFetch('attendance'),
     dbFetch('weekly_player_notes', { order: { col:'created_at', asc:true } }),
-    dbFetch('schedule_settings', { eq: { setting_key: 'default' } })
+    dbFetch('schedule_settings', { eq: { setting_key: 'default' } }),
+    dbFetch('weekly_raid_rewards', { order: { col:'created_at', asc:true } }),
+    dbFetch('gold_rate_settings', { eq: { setting_key: 'default' } })
   ]);
 
   state.players = players || [];
@@ -1575,6 +1757,9 @@ async function loadAllData() {
   }));
   state.attendance = attendance || [];
   state.weeklyNotes = notes || [];
+  state.weeklyRaidRewards = weeklyRaidRewards || [];
+  state.goldRateSetting = goldRateSettings?.[0] || { setting_key:'default', base_gold_manha:100, price_per_base_manwon:15, fee_rate:0.05 };
+  if (!state.currentGoldWeekLabel) state.currentGoldWeekLabel = getDefaultWeekLabel();
 
 const setting = settings?.[0];
 
@@ -1609,6 +1794,8 @@ function renderAll() {
   renderMemos();
   renderScheduleBoards();
   renderAssignedPartyPanel();
+  renderGoldCheck();
+  renderGoldCalculator(true);
   renderRaidFilterChips();
   renderParties();
   renderCharacters();
@@ -3050,8 +3237,429 @@ function openScheduleDetail(slotId) {
 
   openModal('detailModal');
 }
+
+
+/* =========================
+   캐릭터 골드체크 확장 기능
+   ========================= */
+function escapeGoldHtml(value) {
+  return String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+}
+function formatWon(value) {
+  return `${Math.round(Number(value || 0)).toLocaleString()}원`;
+}
+function formatGold(value) {
+  return `${Math.round(Number(value || 0)).toLocaleString()}골`;
+}
+function getDefaultWeekLabel() {
+  const d = getKstNow();
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+  const weekNo = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+  return `${date.getUTCFullYear()}-W${String(weekNo).padStart(2,'0')}`;
+}
+function getGoldWeekLabel() {
+  return String(state.currentGoldWeekLabel || getDefaultWeekLabel()).trim() || getDefaultWeekLabel();
+}
+function getWeekRewards() {
+  const week = getGoldWeekLabel();
+  return (state.weeklyRaidRewards || []).filter(v => v.week_label === week && v.is_completed !== false);
+}
+function getSelectedGoldCharacters() {
+  const selectedPlayerId = state.currentGoldPlayerFilter || '';
+  if (!selectedPlayerId) return [];
+
+  let chars = state.characters.filter(ch => ch.player_id === selectedPlayerId);
+
+  const keyword = String(state.currentGoldCharacterSearch || '').trim().toLowerCase();
+  if (keyword) {
+    chars = chars.filter(ch => {
+      const job = getJob(ch.job_id)?.name || '';
+      return [ch.name, job, ch.level].some(v => String(v ?? '').toLowerCase().includes(keyword));
+    });
+  }
+
+  chars.sort((a,b) => (b.level || 0) - (a.level || 0));
+  if (state.currentGoldHideDone) chars = chars.filter(ch => getGoldCount(ch.id) < 3);
+  return chars;
+}
+function getCharacterReward(characterId, raidId) {
+  return getWeekRewards().find(v => v.character_id === characterId && v.raid_id === raidId) || null;
+}
+function getGoldCount(characterId, excludeRaidId = '') {
+  return getWeekRewards().filter(v => v.character_id === characterId && v.reward_type === 'gold' && v.raid_id !== excludeRaidId).length;
+}
+function getMaterialCount(characterId) {
+  return getWeekRewards().filter(v => v.character_id === characterId && v.reward_type === 'material').length;
+}
+function getCharacterRewardGold(characterId) {
+  return getWeekRewards()
+    .filter(v => v.character_id === characterId && v.reward_type === 'gold')
+    .reduce((sum, v) => sum + Number(getRaid(v.raid_id)?.gold_reward || 0), 0);
+}
+function getCharacterScheduleSlots(characterId) {
+  const partyIds = new Set(state.partyMembers.filter(m => m.character_id === characterId).map(m => m.party_id));
+  return state.scheduleSlots
+    .filter(slot => {
+      if (!partyIds.has(slot.party_id)) return false;
+      const party = getParty(slot.party_id);
+      return party && !isEmptyTimeParty(party);
+    })
+    .sort((a,b) => (DAY_ORDER.indexOf(a.day_of_week) - DAY_ORDER.indexOf(b.day_of_week)) || getAdjustedMinutes(a.start_time) - getAdjustedMinutes(b.start_time));
+}
+function getCharacterRaidScheduleSlots(characterId, raidId) {
+  return getCharacterScheduleSlots(characterId).filter(slot => {
+    const party = getParty(slot.party_id);
+    return party && party.raid_id === raidId;
+  });
+}
+function getCharacterRemainingGold(characterId) {
+  let slotsLeft = Math.max(0, 3 - getGoldCount(characterId));
+  if (slotsLeft <= 0) return 0;
+
+  let total = 0;
+  for (const { raid, levelOk } of getActiveGoldRaidsForCharacter({ id: characterId, level: getCharacter(characterId)?.level || 0 })) {
+    if (slotsLeft <= 0) break;
+    if (!levelOk) continue;
+    const reward = getCharacterReward(characterId, raid.id);
+    if (reward) continue;
+    const hasUpcoming = getCharacterRaidScheduleSlots(characterId, raid.id).some(slot => !slot.is_completed);
+    if (!hasUpcoming) continue;
+    total += Number(raid.gold_reward || 0);
+    slotsLeft -= 1;
+  }
+  return total;
+}
+function getActiveGoldRaidsForCharacter(ch) {
+  const raidIds = [];
+  getCharacterScheduleSlots(ch.id).forEach(slot => {
+    const party = getParty(slot.party_id);
+    const raidId = party?.raid_id;
+    if (raidId && !raidIds.includes(raidId)) raidIds.push(raidId);
+  });
+
+  return raidIds
+    .map(id => getRaid(id))
+    .filter(raid => raid && !isEmptyTimeRaid(raid))
+    .map(raid => ({
+      raid,
+      levelOk: (ch.level || 0) >= (raid.min_level || 1) && (ch.level || 0) <= (raid.max_level || 9999),
+      reward: getCharacterReward(ch.id, raid.id)
+    }));
+}
+function setGoldPlayerFilter(value) {
+  state.currentGoldPlayerFilter = value || '';
+  renderGoldCheck();
+}
+function setGoldWeekLabel(value) {
+  state.currentGoldWeekLabel = String(value || '').trim() || getDefaultWeekLabel();
+  renderGoldCheck();
+}
+function toggleGoldHideDone(checked) {
+  state.currentGoldHideDone = !!checked;
+  renderGoldCheck();
+}
+function setGoldCharacterSearch(value) {
+  state.currentGoldCharacterSearch = String(value || '');
+  renderGoldCheck();
+}
+function renderGoldCheck() {
+  if (!document.getElementById('content-goldcheck')) return;
+
+  const playerSelect = document.getElementById('goldPlayerFilter');
+  if (playerSelect) {
+    const current = state.currentGoldPlayerFilter || '';
+    playerSelect.innerHTML = `<option value="">플레이어 선택</option>` + state.players.map(p => `<option value="${p.id}">${escapeGoldHtml(p.name)}</option>`).join('');
+    playerSelect.value = state.players.some(p => p.id === current) ? current : '';
+    state.currentGoldPlayerFilter = playerSelect.value;
+  }
+
+  const searchInput = document.getElementById('goldCharacterSearch');
+  if (searchInput && searchInput.value !== (state.currentGoldCharacterSearch || '')) searchInput.value = state.currentGoldCharacterSearch || '';
+  const hideInput = document.getElementById('goldHideDone');
+  if (hideInput) hideInput.checked = !!state.currentGoldHideDone;
+
+  renderGoldSummaryCards();
+  renderGoldCharacterCards();
+  renderGoldRaidRewardSettings();
+}
+function renderGoldWeekHistory() {
+  const wrap = document.getElementById('goldWeekHistory');
+  if (!wrap) return;
+  const weeks = [...new Set([getDefaultWeekLabel(), ...state.weeklyRaidRewards.map(v => v.week_label).filter(Boolean)])].slice(-10).reverse();
+  wrap.innerHTML = weeks.map(week => `<button class="gold-week-chip ${week === getGoldWeekLabel() ? 'active' : ''}" onclick="setGoldWeekLabel('${escapeGoldHtml(week)}')">${escapeGoldHtml(week)}</button>`).join('');
+}
+function renderGoldSummaryCards() {
+  const wrap = document.getElementById('goldSummaryCards');
+  if (!wrap) return;
+  if (!state.currentGoldPlayerFilter) {
+    wrap.innerHTML = '';
+    return;
+  }
+  const chars = getSelectedGoldCharacters();
+  const rewards = getWeekRewards().filter(v => chars.some(ch => ch.id === v.character_id));
+  const goldDone = rewards.filter(v => v.reward_type === 'gold').length;
+  const totalGoldSlots = chars.length * 3;
+  const remaining = Math.max(0, totalGoldSlots - goldDone);
+  const currentGold = chars.reduce((sum, ch) => sum + getCharacterRewardGold(ch.id), 0);
+  const remainingGold = chars.reduce((sum, ch) => sum + getCharacterRemainingGold(ch.id), 0);
+  wrap.innerHTML = `
+    <div class="gold-summary-card"><div class="gold-summary-label">표시 캐릭터</div><div class="gold-summary-value">${chars.length}</div><div class="gold-summary-sub">선택 유저/검색 필터 기준</div></div>
+    <div class="gold-summary-card"><div class="gold-summary-label">골드 보상 완료</div><div class="gold-summary-value">${goldDone}/${totalGoldSlots}</div><div class="gold-summary-sub">남은 골드 레이드 ${remaining}개</div></div>
+    <div class="gold-summary-card"><div class="gold-summary-label">현재 획득 골드</div><div class="gold-summary-value">${formatGold(currentGold)}</div><div class="gold-summary-sub">골드 완료 체크 기준</div></div>
+    <div class="gold-summary-card"><div class="gold-summary-label">남은 획득 골드</div><div class="gold-summary-value">${formatGold(remainingGold)}</div><div class="gold-summary-sub">미완료 스케줄 중 받을 수 있는 골드</div></div>
+  `;
+}
+function renderGoldCharacterCards() {
+  const wrap = document.getElementById('goldCharacterCards');
+  if (!wrap) return;
+  if (!state.currentGoldPlayerFilter) {
+    wrap.innerHTML = `<div class="gold-empty">플레이어를 먼저 선택해주세요.</div>`;
+    return;
+  }
+
+  const chars = getSelectedGoldCharacters();
+  if (!chars.length) {
+    wrap.innerHTML = `<div class="gold-empty">해당 플레이어에 표시할 캐릭터가 없습니다.</div>`;
+    return;
+  }
+
+  wrap.innerHTML = chars.map(ch => {
+    const player = getPlayer(ch.player_id);
+    const job = getJob(ch.job_id);
+    const goldCount = getGoldCount(ch.id);
+    const currentGold = getCharacterRewardGold(ch.id);
+    const remainingGold = getCharacterRemainingGold(ch.id);
+    const raids = getActiveGoldRaidsForCharacter(ch);
+    const doneClass = goldCount >= 3 ? 'done' : (goldCount >= 2 ? 'warn' : '');
+
+    return `
+      <div class="gold-character-card">
+        <div class="gold-character-head">
+          <div class="gold-character-titlebox">
+            <div class="gold-character-name">${escapeGoldHtml(ch.name)}</div>
+            <div class="gold-character-meta">${escapeGoldHtml(job?.name || '직업 미지정')} · Lv.${ch.level ?? '-'}${player?.name ? ` · ${escapeGoldHtml(player.name)}` : ''}</div>
+          </div>
+          <div class="gold-progress">
+            <span class="gold-progress-pill ${doneClass}">골드 ${goldCount}/3</span>
+            <span class="gold-progress-text">현재 ${formatGold(currentGold)}</span>
+            <span class="gold-progress-text">남은 ${formatGold(remainingGold)}</span>
+          </div>
+        </div>
+
+        ${raids.length ? `<div class="gold-raid-list">
+          ${raids.map(({raid, levelOk, reward}) => {
+            const isGold = reward?.reward_type === 'gold';
+            const isMaterial = reward?.reward_type === 'material';
+            const upcomingSchedules = getCharacterRaidScheduleSlots(ch.id, raid.id).filter(slot => !slot.is_completed);
+            const scheduleLine = upcomingSchedules.length
+              ? `<span class="gold-raid-schedule">⏰ ${upcomingSchedules.map(slot => `${DAY_NAMES[slot.day_of_week]} ${normalizeTime(slot.start_time)}`).join(' · ')}</span>`
+              : '';
+            const rowClass = isGold ? 'done' : (isMaterial ? 'material' : '');
+            return `
+              <div class="gold-raid-row ${rowClass} ${levelOk ? '' : 'out'}">
+                <div class="gold-raid-main">
+                  <div class="gold-raid-title">${isGold ? '✅' : (raid.icon ? escapeGoldHtml(raid.icon) : '🛡')} ${escapeGoldHtml(raid.name)}</div>
+                  ${scheduleLine}
+                </div>
+                <div class="gold-raid-reward">${Number(raid.gold_reward || 0).toLocaleString()}골</div>
+                <div class="gold-raid-actions">
+                  <button class="btn btn-primary ${isGold ? 'gold-action-active' : ''}" onclick="setCharacterRaidReward('${ch.id}','${raid.id}','gold')">${isGold ? '완료' : '골드'}</button>
+                  <button class="btn btn-orange ${isMaterial ? 'gold-action-active' : ''}" onclick="setCharacterRaidReward('${ch.id}','${raid.id}','material')">재료</button>
+                  ${reward ? `<button class="btn btn-ghost" onclick="clearCharacterRaidReward('${ch.id}','${raid.id}')">해제</button>` : ''}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>` : `<div class="gold-empty small">스케줄에 등록된 레이드가 없습니다.</div>`}
+      </div>
+    `;
+  }).join('');
+}
+function renderGoldCalculator(skipInputFill = false) {
+  const result = document.getElementById('goldCalcResult');
+  if (!result) return;
+  const setting = state.goldRateSetting || { base_gold_manha:100, price_per_base_manwon:15, fee_rate:0.05 };
+  const baseEl = document.getElementById('goldRateBase');
+  const priceEl = document.getElementById('goldRatePrice');
+  const amountEl = document.getElementById('goldTradeAmount');
+  const feeEl = document.getElementById('goldFeeRate');
+
+  if (!skipInputFill) {
+    if (baseEl && !baseEl.value) baseEl.value = setting.base_gold_manha ?? 100;
+    if (priceEl && !priceEl.value) priceEl.value = setting.price_per_base_manwon ?? 15;
+    if (feeEl && !feeEl.value) feeEl.value = Number(setting.fee_rate ?? 0.05) * 100;
+  } else {
+    if (baseEl) baseEl.value = setting.base_gold_manha ?? 100;
+    if (priceEl) priceEl.value = setting.price_per_base_manwon ?? 15;
+    if (feeEl) feeEl.value = Number(setting.fee_rate ?? 0.05) * 100;
+  }
+
+  const base = Number(baseEl?.value || 100);
+  const priceMan = Number(priceEl?.value || 15);
+  const amountMan = Number(amountEl?.value || 0);
+  const feeRate = Number(feeEl?.value || 0) / 100;
+  const won = base > 0 ? (amountMan / base) * priceMan * 10000 : 0;
+  const receiveGold = amountMan * 10000 * (1 - feeRate);
+  const oneManWon = base > 0 ? priceMan * 10000 / base : 0;
+
+  result.innerHTML = `
+    <div style="font-size:12px;color:var(--sub);font-weight:800">결제/판매 금액</div>
+    <div style="margin-top:4px"><strong>${formatWon(won)}</strong></div>
+    <div style="font-size:12px;color:var(--sub);margin-top:8px;line-height:1.55">
+      실수령 골드: ${Math.round(receiveGold).toLocaleString()}골<br>
+      1만골당 금액: ${formatWon(oneManWon)}
+    </div>
+  `;
+}
+async function saveGoldRateSettings() {
+  const payload = {
+    setting_key:'default',
+    base_gold_manha:Number(document.getElementById('goldRateBase')?.value || 100),
+    price_per_base_manwon:Number(document.getElementById('goldRatePrice')?.value || 15),
+    fee_rate:Number(document.getElementById('goldFeeRate')?.value || 0) / 100,
+    updated_at:new Date().toISOString()
+  };
+  try {
+    const { data, error } = await supabaseClient.from('gold_rate_settings').upsert(payload, { onConflict:'setting_key' }).select();
+    if (error) throw error;
+    state.goldRateSetting = data?.[0] || payload;
+    renderGoldCalculator(true);
+    showToast('골드 시세를 저장했습니다.');
+  } catch(e) {
+    console.error(e);
+    showToast('골드 시세 저장 실패: SQL 확장 적용 여부를 확인해주세요.', 'error');
+  }
+}
+function copyGoldCalcResult() {
+  const text = document.getElementById('goldCalcResult')?.dataset.copyText || '';
+  navigator.clipboard?.writeText(text);
+  showToast('계산값을 복사했습니다.');
+}
+function renderGoldRaidRewardSettings() {
+  const wrap = document.getElementById('goldRaidRewardSettings');
+  if (!wrap) return;
+  const raids = state.raids.filter(v => !isEmptyTimeRaid(v)).sort((a,b) => (a.sort_order ?? 999) - (b.sort_order ?? 999));
+  if (!raids.length) {
+    wrap.innerHTML = `<div class="gold-empty" style="padding:18px">등록된 레이드가 없습니다.</div>`;
+    return;
+  }
+  wrap.innerHTML = raids.map(raid => `
+    <div class="gold-raid-setting-row">
+      <div class="gold-raid-setting-name">${escapeGoldHtml(raid.name)}</div>
+      <input type="number" class="form-control" id="raidGold_${raid.id}" value="${Number(raid.gold_reward || 0)}" min="0" step="100">
+      <button class="btn btn-ghost btn-sm" onclick="saveRaidGoldReward('${raid.id}')">저장</button>
+    </div>
+  `).join('');
+}
+async function saveRaidGoldReward(raidId) {
+  const input = document.getElementById(`raidGold_${raidId}`);
+  const gold = Number(input?.value || 0);
+  const result = await dbUpdate('raids', { id: raidId }, { gold_reward: gold });
+  if (result) {
+    const raid = getRaid(raidId);
+    if (raid) raid.gold_reward = gold;
+    renderGoldCheck();
+    showToast('레이드 보상을 저장했습니다.');
+  }
+}
+async function upsertWeeklyRaidReward(payload) {
+  try {
+    const { data, error } = await supabaseClient.from('weekly_raid_rewards').upsert(payload, { onConflict:'week_label,character_id,raid_id' }).select();
+    if (error) throw error;
+    return data;
+  } catch(e) {
+    console.error(e);
+    showToast('골드체크 저장 실패: SQL 확장 적용 여부를 확인해주세요.', 'error');
+    return null;
+  }
+}
+async function setCharacterRaidReward(characterId, raidId, rewardType, scheduleSlotId = null) {
+  const existing = getCharacterReward(characterId, raidId);
+  let finalType = rewardType;
+  if (rewardType === 'gold' && !existing && getGoldCount(characterId) >= 3) {
+    finalType = 'material';
+    showToast('이미 골드 3/3이라 재료런으로 처리했습니다.', 'info');
+  }
+
+  const inserted = await upsertWeeklyRaidReward({
+    week_label:getGoldWeekLabel(),
+    character_id:characterId,
+    raid_id:raidId,
+    schedule_slot_id:scheduleSlotId,
+    reward_type:finalType,
+    is_completed:true,
+    completed_at:new Date().toISOString()
+  });
+  if (inserted) await reloadAndRender();
+}
+async function clearCharacterRaidReward(characterId, raidId) {
+  const found = getCharacterReward(characterId, raidId);
+  if (!found) return;
+  await dbDelete('weekly_raid_rewards', { id: found.id });
+  await reloadAndRender();
+}
+async function applyScheduleRewardsFromSlot(slotId) {
+  const slot = state.scheduleSlots.find(v => v.id === slotId);
+  if (!slot) return;
+  const party = getParty(slot.party_id);
+  if (!party || isEmptyTimeParty(party)) return;
+  const raid = getRaid(party.raid_id);
+  if (!raid || isEmptyTimeRaid(raid)) return;
+
+  const members = getPartyMembers(party.id);
+  for (const m of members) {
+    if (!m.character_id) continue;
+    const att = state.attendance.find(v => v.schedule_slot_id === slotId && v.player_id === m.player_id);
+    if (att?.is_absent) continue;
+    const existing = getCharacterReward(m.character_id, raid.id);
+    const rewardType = existing?.reward_type || (getGoldCount(m.character_id, raid.id) < 3 ? 'gold' : 'material');
+    await upsertWeeklyRaidReward({
+      week_label:getGoldWeekLabel(),
+      character_id:m.character_id,
+      raid_id:raid.id,
+      schedule_slot_id:slotId,
+      reward_type:rewardType,
+      is_completed:true,
+      completed_at:new Date().toISOString()
+    });
+  }
+}
+async function clearScheduleRewards(slotId) {
+  const targets = getWeekRewards().filter(v => v.schedule_slot_id === slotId);
+  for (const r of targets) await dbDelete('weekly_raid_rewards', { id: r.id });
+}
+async function resetWeeklyRewards() {
+  const chars = getSelectedGoldCharacters();
+  const charIds = new Set(chars.map(ch => ch.id));
+  const targets = getWeekRewards().filter(v => charIds.has(v.character_id));
+  if (!targets.length) return showToast('초기화할 체크 내역이 없습니다.', 'info');
+  const label = getPlayer(state.currentGoldPlayerFilter)?.name || '선택 유저';
+  if (!(await appConfirm(`${label} 체크 ${targets.length}개를 초기화할까요?\n스케줄/파티/캐릭터 데이터는 삭제되지 않습니다.`))) return;
+  for (const r of targets) await dbDelete('weekly_raid_rewards', { id: r.id });
+  await reloadAndRender();
+  showToast('이번 주 체크를 초기화했습니다.');
+}
+function buildGoldSummaryText() {
+  const chars = getSelectedGoldCharacters();
+  const lines = [`[${getGoldWeekLabel()} 레이드 골드체크]`];
+  chars.forEach(ch => {
+    lines.push(`${getPlayer(ch.player_id)?.name || '-'} / ${ch.name}: 골드 ${getGoldCount(ch.id)}/3, 재료런 ${getMaterialCount(ch.id)}, 예상 ${formatGold(getCharacterRewardGold(ch.id))}`);
+  });
+  return lines.join('\n');
+}
+function copyGoldSummary() {
+  const text = buildGoldSummaryText();
+  navigator.clipboard?.writeText(text);
+  showToast('골드체크 요약을 복사했습니다.');
+}
+
 async function toggleScheduleComplete(slotId, isCompleted) {
   await dbUpdate('schedule_slots', { id: slotId }, { is_completed: isCompleted });
+  if (isCompleted) await applyScheduleRewardsFromSlot(slotId);
+  else await clearScheduleRewards(slotId);
   await reloadAndRender();
   openScheduleDetail(slotId);
 }
@@ -3300,6 +3908,24 @@ async function subscribeRealtime() {
       table: 'weekly_player_notes'
     }, (payload) => {
       console.log('REALTIME weekly_player_notes:', payload);
+      scheduleRealtimeReload('');
+    })
+
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'weekly_raid_rewards'
+    }, (payload) => {
+      console.log('REALTIME weekly_raid_rewards:', payload);
+      scheduleRealtimeReload('');
+    })
+
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'gold_rate_settings'
+    }, (payload) => {
+      console.log('REALTIME gold_rate_settings:', payload);
       scheduleRealtimeReload('');
     })
 
