@@ -733,6 +733,7 @@ a{text-decoration:none;color:inherit}
 .gold-side-card{padding:16px;border-radius:18px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow-sm)}
 .gold-side-title{font-size:15px;font-weight:900;margin-bottom:10px}
 .gold-calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.gold-highlight-input{background:#fff7c2 !important;border-color:#facc15 !important;box-shadow:inset 0 0 0 1px rgba(250,204,21,.18)}
 .gold-calc-result{padding:12px;border-radius:13px;background:#f8fafc;border:1px solid var(--line);margin-top:10px}
 .gold-calc-result strong{font-size:18px}
 .gold-raid-setting-row{display:grid;grid-template-columns:1fr 96px auto;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line-soft)}
@@ -887,11 +888,11 @@ a{text-decoration:none;color:inherit}
           </div>
           <div class="form-group">
             <label>기준 금액(만원)</label>
-            <input type="number" class="form-control" id="goldRatePrice" min="0" step="0.1" oninput="renderGoldCalculator()">
+            <input type="number" class="form-control gold-highlight-input" id="goldRatePrice" min="0" step="0.1" oninput="renderGoldCalculator()">
           </div>
           <div class="form-group">
             <label>거래 골드(만골)</label>
-            <input type="number" class="form-control" id="goldTradeAmount" min="0" step="1" value="100" oninput="renderGoldCalculator()">
+            <input type="number" class="form-control gold-highlight-input" id="goldTradeAmount" min="0" step="1" value="140" oninput="renderGoldCalculator()">
           </div>
           <div class="form-group">
             <label>수수료율(%)</label>
@@ -907,8 +908,8 @@ a{text-decoration:none;color:inherit}
       <div class="card gold-side-card">
         <div class="gold-side-title">사용 예시</div>
         <div class="gold-rate-help">
-          <b>100:15</b>는 100만 골드에 15만 원이라는 의미입니다.<br>
-          거래 골드를 만골 단위로 입력하면 결제/판매 금액과 수수료 적용 후 실수령 골드 or 금액을 확인할 수 있습니다.
+          <b>100:15</b>는 100만 골드가 15만 원이라는 뜻입니다.<br>
+          거래 골드를 만골 단위로 입력하면 결제/판매 금액과 수수료 적용 후 실수령 골드를 바로 확인할 수 있습니다.
         </div>
       </div>
     </div>
