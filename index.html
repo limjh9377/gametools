@@ -709,7 +709,7 @@ a{text-decoration:none;color:inherit}
 .gold-raid-list{display:flex;flex-direction:column;gap:6px;margin-top:12px}
 .gold-raid-row{display:grid;grid-template-columns:minmax(220px,1fr) 98px auto;align-items:center;gap:12px;min-height:42px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.82);border:1px solid #e5eaf1}
 .gold-raid-row.done{background:#f7fafc;color:#64748b;border-color:#d8dde3}
-.gold-raid-row.material{background:#fff7ed;border-color:#fed7aa}
+.gold-raid-row.material{background:#f7fafc;color:#64748b;border-color:#d8dde3}
 .gold-raid-row.out{opacity:.62}
 .gold-raid-main{display:flex;align-items:center;gap:12px;min-width:0;flex-wrap:wrap}
 .gold-raid-title{font-size:13px;font-weight:950;color:#111827;white-space:nowrap;min-width:126px}
@@ -755,10 +755,13 @@ a{text-decoration:none;color:inherit}
 .gold-character-head{padding-bottom:12px;border-bottom:1px solid var(--line-soft)}
 .gold-raid-row{background:#f8fafc;border-color:#edf2f7}
 .gold-raid-row:hover{background:#fff;border-color:#cbd5e1}
-.gold-raid-row.done,.gold-raid-row.material{opacity:.52;filter:grayscale(.22)}
+.gold-raid-row.done,.gold-raid-row.material{opacity:.58;filter:grayscale(.18);background:#f7fafc;border-color:#d8dde3;color:#64748b}
 .gold-raid-row.out{opacity:.42;filter:grayscale(.35)}
 .gold-raid-row.done:hover,.gold-raid-row.material:hover,.gold-raid-row.out:hover{opacity:.76}
 .gold-raid-row.done .gold-raid-schedule,.gold-raid-row.material .gold-raid-schedule{display:none}
+.gold-reward-status{font-size:12px;font-weight:950;color:#94a3b8;text-align:right;white-space:nowrap}
+.gold-raid-row.done .gold-raid-title,.gold-raid-row.material .gold-raid-title,.gold-raid-row.done .gold-raid-reward,.gold-raid-row.material .gold-raid-reward{color:#94a3b8}
+.gold-raid-actions .btn:disabled{opacity:.55;cursor:wait}
 @media (max-width:1180px){.gold-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.gold-main-stack{grid-template-columns:1fr}}
 @media (max-width:720px){.gold-summary-grid{grid-template-columns:1fr}}
 
@@ -3184,7 +3187,7 @@ function openScheduleDetail(slotId) {
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
             <div class="detail-status ${slot.is_completed ? 'done' : 'todo'}">${slot.is_completed ? '완료' : '진행 전'}</div>
-            <button class="btn ${slot.is_completed ? 'btn-ghost' : 'btn-primary'} btn-sm" onclick="toggleScheduleComplete('${slot.id}', ${slot.is_completed ? 'false' : 'true'})">
+            <button class="btn ${slot.is_completed ? 'btn-ghost' : 'btn-primary'} btn-sm" onclick="toggleScheduleCompleteFromButton(this,'${slot.id}', ${slot.is_completed ? 'false' : 'true'})">
               ${slot.is_completed ? '완료 해제' : '완료하기'}
             </button>
           </div>
@@ -3206,7 +3209,7 @@ function openScheduleDetail(slotId) {
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
           <div class="detail-status ${slot.is_completed ? 'done' : 'todo'}">${slot.is_completed ? '완료' : '진행 전'}</div>
-          <button class="btn ${slot.is_completed ? 'btn-ghost' : 'btn-primary'} btn-sm" onclick="toggleScheduleComplete('${slot.id}', ${slot.is_completed ? 'false' : 'true'})">
+          <button class="btn ${slot.is_completed ? 'btn-ghost' : 'btn-primary'} btn-sm" onclick="toggleScheduleCompleteFromButton(this,'${slot.id}', ${slot.is_completed ? 'false' : 'true'})">
             ${slot.is_completed ? '완료 해제' : '완료하기'}
           </button>
         </div>
@@ -3262,6 +3265,10 @@ function getDefaultWeekLabel() {
 }
 function getGoldWeekLabel() {
   return String(state.currentGoldWeekLabel || getDefaultWeekLabel()).trim() || getDefaultWeekLabel();
+}
+function formatGoldScheduleTime(slot) {
+  const shortDays = ['', '(월)', '(화)', '(수)', '(목)', '(금)', '(토)', '(일)'];
+  return `${shortDays[slot.day_of_week] || ''} ${normalizeTime(slot.start_time)}`.trim();
 }
 function getWeekRewards() {
   const week = getGoldWeekLabel();
@@ -3401,15 +3408,15 @@ function renderGoldSummaryCards() {
   const chars = getSelectedGoldCharacters();
   const rewards = getWeekRewards().filter(v => chars.some(ch => ch.id === v.character_id));
   const goldDone = rewards.filter(v => v.reward_type === 'gold').length;
+  const materialDone = rewards.filter(v => v.reward_type === 'material').length;
+  const completedTotal = rewards.length;
   const totalGoldSlots = chars.length * 3;
   const remaining = Math.max(0, totalGoldSlots - goldDone);
-  const currentGold = chars.reduce((sum, ch) => sum + getCharacterRewardGold(ch.id), 0);
-  const remainingGold = chars.reduce((sum, ch) => sum + getCharacterRemainingGold(ch.id), 0);
   wrap.innerHTML = `
     <div class="gold-summary-card"><div class="gold-summary-label">표시 캐릭터</div><div class="gold-summary-value">${chars.length}</div><div class="gold-summary-sub">선택 유저/검색 필터 기준</div></div>
     <div class="gold-summary-card"><div class="gold-summary-label">골드 보상 완료</div><div class="gold-summary-value">${goldDone}/${totalGoldSlots}</div><div class="gold-summary-sub">남은 골드 레이드 ${remaining}개</div></div>
-    <div class="gold-summary-card"><div class="gold-summary-label">현재 획득 골드</div><div class="gold-summary-value">${formatGold(currentGold)}</div><div class="gold-summary-sub">골드 완료 체크 기준</div></div>
-    <div class="gold-summary-card"><div class="gold-summary-label">남은 획득 골드</div><div class="gold-summary-value">${formatGold(remainingGold)}</div><div class="gold-summary-sub">미완료 스케줄 중 받을 수 있는 골드</div></div>
+    <div class="gold-summary-card"><div class="gold-summary-label">골드 O</div><div class="gold-summary-value">${goldDone}</div><div class="gold-summary-sub">골드 받고 완료한 레이드</div></div>
+    <div class="gold-summary-card"><div class="gold-summary-label">골드 X</div><div class="gold-summary-value">${materialDone}</div><div class="gold-summary-sub">재료만 받고 완료한 레이드</div></div>
   `;
 }
 function renderGoldCharacterCards() {
@@ -3430,8 +3437,6 @@ function renderGoldCharacterCards() {
     const player = getPlayer(ch.player_id);
     const job = getJob(ch.job_id);
     const goldCount = getGoldCount(ch.id);
-    const currentGold = getCharacterRewardGold(ch.id);
-    const remainingGold = getCharacterRemainingGold(ch.id);
     const raids = getActiveGoldRaidsForCharacter(ch);
     const doneClass = goldCount >= 3 ? 'done' : (goldCount >= 2 ? 'warn' : '');
 
@@ -3444,8 +3449,6 @@ function renderGoldCharacterCards() {
           </div>
           <div class="gold-progress">
             <span class="gold-progress-pill ${doneClass}">골드 ${goldCount}/3</span>
-            <span class="gold-progress-text">현재 ${formatGold(currentGold)}</span>
-            <span class="gold-progress-text">남은 ${formatGold(remainingGold)}</span>
           </div>
         </div>
 
@@ -3455,20 +3458,20 @@ function renderGoldCharacterCards() {
             const isMaterial = reward?.reward_type === 'material';
             const upcomingSchedules = getCharacterRaidScheduleSlots(ch.id, raid.id).filter(slot => !slot.is_completed);
             const scheduleLine = upcomingSchedules.length
-              ? `<span class="gold-raid-schedule">⏰ ${upcomingSchedules.map(slot => `${DAY_NAMES[slot.day_of_week]} ${normalizeTime(slot.start_time)}`).join(' · ')}</span>`
+              ? `<span class="gold-raid-schedule">⏰ ${upcomingSchedules.map(slot => formatGoldScheduleTime(slot)).join(' · ')}</span>`
               : '';
             const rowClass = isGold ? 'done' : (isMaterial ? 'material' : '');
             return `
               <div class="gold-raid-row ${rowClass} ${levelOk ? '' : 'out'}">
                 <div class="gold-raid-main">
-                  <div class="gold-raid-title">${isGold ? '✅' : (raid.icon ? escapeGoldHtml(raid.icon) : '🛡')} ${escapeGoldHtml(raid.name)}</div>
+                  <div class="gold-raid-title">${reward ? '✓' : (raid.icon ? escapeGoldHtml(raid.icon) : '🛡')} ${escapeGoldHtml(raid.name)}</div>
                   ${scheduleLine}
                 </div>
-                <div class="gold-raid-reward">${Number(raid.gold_reward || 0).toLocaleString()}골</div>
+                <div class="gold-raid-reward">${reward ? `<span class="gold-reward-status">골드 ${isGold ? 'O' : 'X'}</span>` : `${Number(raid.gold_reward || 0).toLocaleString()}골`}</div>
                 <div class="gold-raid-actions">
-                  <button class="btn btn-primary ${isGold ? 'gold-action-active' : ''}" onclick="setCharacterRaidReward('${ch.id}','${raid.id}','gold')">${isGold ? '완료' : '골드'}</button>
-                  <button class="btn btn-orange ${isMaterial ? 'gold-action-active' : ''}" onclick="setCharacterRaidReward('${ch.id}','${raid.id}','material')">재료</button>
-                  ${reward ? `<button class="btn btn-ghost" onclick="clearCharacterRaidReward('${ch.id}','${raid.id}')">해제</button>` : ''}
+                  ${reward
+                    ? `<button class="btn btn-ghost" onclick="clearCharacterRaidRewardFromButton(this,'${ch.id}','${raid.id}')">해제</button>`
+                    : `<button class="btn btn-primary" onclick="setCharacterRaidRewardFromButton(this,'${ch.id}','${raid.id}','gold')">골드</button><button class="btn btn-orange" onclick="setCharacterRaidRewardFromButton(this,'${ch.id}','${raid.id}','material')">재료</button>`}
                 </div>
               </div>
             `;
@@ -3576,6 +3579,22 @@ async function upsertWeeklyRaidReward(payload) {
     return null;
   }
 }
+function setGoldActionLoading(btn) {
+  if (!btn || btn.disabled) return false;
+  const row = btn.closest('.gold-raid-row');
+  row?.querySelectorAll('button').forEach(button => button.disabled = true);
+  btn.dataset.originalText = btn.textContent;
+  btn.textContent = '처리중';
+  return true;
+}
+async function setCharacterRaidRewardFromButton(btn, characterId, raidId, rewardType) {
+  if (!setGoldActionLoading(btn)) return;
+  await setCharacterRaidReward(characterId, raidId, rewardType);
+}
+async function clearCharacterRaidRewardFromButton(btn, characterId, raidId) {
+  if (!setGoldActionLoading(btn)) return;
+  await clearCharacterRaidReward(characterId, raidId);
+}
 async function setCharacterRaidReward(characterId, raidId, rewardType, scheduleSlotId = null) {
   const existing = getCharacterReward(characterId, raidId);
   let finalType = rewardType;
@@ -3656,6 +3675,15 @@ function copyGoldSummary() {
   showToast('골드체크 요약을 복사했습니다.');
 }
 
+async function toggleScheduleCompleteFromButton(btn, slotId, isCompleted) {
+  if (btn?.disabled) return;
+  if (btn) {
+    btn.disabled = true;
+    btn.dataset.originalText = btn.textContent;
+    btn.textContent = '처리중';
+  }
+  await toggleScheduleComplete(slotId, isCompleted);
+}
 async function toggleScheduleComplete(slotId, isCompleted) {
   await dbUpdate('schedule_slots', { id: slotId }, { is_completed: isCompleted });
   if (isCompleted) await applyScheduleRewardsFromSlot(slotId);
