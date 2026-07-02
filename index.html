@@ -704,7 +704,14 @@ a{text-decoration:none;color:inherit}
 .gold-progress{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--sub);font-weight:850;white-space:nowrap}
 .gold-progress-pill{display:inline-flex;align-items:center;justify-content:center;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:950;background:#ecfdf5;color:#047857;border:1px solid #a7f3d0}
 .gold-progress-pill.warn{background:#fff7ed;color:#ea580c;border-color:#fed7aa}
-.gold-progress-pill.done{background:#eef2f5;color:#64748b;border-color:#d8dde3}
+.gold-progress-pill.done{
+  background:#f9fafb !important;
+  color:#9ca3af !important;
+  border-color:#e5e7eb !important;
+  filter:grayscale(1);
+  opacity:.72;
+  box-shadow:none;
+}
 .gold-progress-text{color:#475569}
 .gold-raid-list{display:flex;flex-direction:column;gap:6px;margin-top:12px}
 .gold-raid-row{display:grid;grid-template-columns:minmax(220px,1fr) 98px auto;align-items:center;gap:12px;min-height:42px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.82);border:1px solid #e5eaf1}
@@ -765,6 +772,19 @@ a{text-decoration:none;color:inherit}
 .gold-raid-actions .btn:disabled{opacity:.55;cursor:wait}
 @media (max-width:1180px){.gold-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.gold-main-stack{grid-template-columns:1fr}}
 @media (max-width:720px){.gold-summary-grid{grid-template-columns:1fr}}
+
+/* 캐릭터별 혈석/싱글 교환 체크 */
+.gold-character-head{align-items:center}
+.gold-character-titlebox{flex:1;min-width:0}
+.gold-extra-checks{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap;margin-left:auto}
+.gold-extra-check{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:28px;padding:0 10px;border-radius:999px;background:#fff;border:1px solid #d8dee8;color:#64748b;font-size:11px;font-weight:900;white-space:nowrap;box-shadow:0 1px 2px rgba(15,23,42,.04);cursor:pointer;user-select:none;transition:.15s}
+.gold-extra-check:hover{background:#f8fafc;border-color:#cbd5e1;color:#334155}
+.gold-extra-check input{width:14px;height:14px;margin:0;accent-color:#64748b;cursor:pointer;flex-shrink:0}
+.gold-extra-check.done{background:#eef2f5;border-color:#cbd5e1;color:#64748b;filter:grayscale(1);opacity:.82;box-shadow:inset 0 0 0 1px rgba(15,23,42,.03)}
+.gold-extra-check.done span{text-decoration:none}
+.gold-extra-check.saving{opacity:.55;cursor:wait;pointer-events:none}
+.gold-extra-check.saving input{cursor:wait}
+@media (max-width:760px){.gold-character-head{align-items:flex-start}.gold-extra-checks{width:100%;justify-content:flex-start;margin-left:0}.gold-progress{width:100%;justify-content:flex-start}}
 
 </style>
 </head>
@@ -892,7 +912,7 @@ a{text-decoration:none;color:inherit}
           </div>
           <div class="form-group">
             <label>거래 골드(만골)</label>
-            <input type="number" class="form-control gold-highlight-input" id="goldTradeAmount" min="0" step="1" value="140" oninput="renderGoldCalculator()">
+            <input type="number" class="form-control gold-highlight-input" id="goldTradeAmount" min="0" step="1" value="100" oninput="renderGoldCalculator()">
           </div>
           <div class="form-group">
             <label>수수료율(%)</label>
@@ -1348,6 +1368,7 @@ let state = {
   attendance: [],
   weeklyNotes: [],
   weeklyRaidRewards: [],
+  weeklyCharacterChecks: [],
   goldRateSetting: { setting_key:'default', base_gold_manha:100, price_per_base_manwon:15, fee_rate:0.05 },
   currentGoldPlayerFilter: '',
   currentGoldWeekLabel: '',
@@ -1732,7 +1753,7 @@ async function dbDelete(table, match) {
 async function loadAllData() {
   const [
     players, jobs, characters, raids, parties, partyMembers,
-    scheduleSlots, attendance, notes, settings, weeklyRaidRewards, goldRateSettings
+    scheduleSlots, attendance, notes, settings, weeklyRaidRewards, goldRateSettings, weeklyCharacterChecks
   ] = await Promise.all([
     dbFetch('players', { order: { col:'created_at', asc:true } }),
     dbFetch('jobs', { order: { col:'sort_order', asc:true } }),
@@ -1745,7 +1766,8 @@ async function loadAllData() {
     dbFetch('weekly_player_notes', { order: { col:'created_at', asc:true } }),
     dbFetch('schedule_settings', { eq: { setting_key: 'default' } }),
     dbFetch('weekly_raid_rewards', { order: { col:'created_at', asc:true } }),
-    dbFetch('gold_rate_settings', { eq: { setting_key: 'default' } })
+    dbFetch('gold_rate_settings', { eq: { setting_key: 'default' } }),
+    dbFetch('weekly_character_checks', { order: { col:'created_at', asc:true } })
   ]);
 
   state.players = players || [];
@@ -1762,6 +1784,7 @@ async function loadAllData() {
   state.attendance = attendance || [];
   state.weeklyNotes = notes || [];
   state.weeklyRaidRewards = weeklyRaidRewards || [];
+  state.weeklyCharacterChecks = weeklyCharacterChecks || [];
   state.goldRateSetting = goldRateSettings?.[0] || { setting_key:'default', base_gold_manha:100, price_per_base_manwon:15, fee_rate:0.05 };
   if (!state.currentGoldWeekLabel) state.currentGoldWeekLabel = getDefaultWeekLabel();
 
@@ -3275,6 +3298,23 @@ function getWeekRewards() {
   const week = getGoldWeekLabel();
   return (state.weeklyRaidRewards || []).filter(v => v.week_label === week && v.is_completed !== false);
 }
+
+function getWeekCharacterChecks() {
+  const week = getGoldWeekLabel();
+  return (state.weeklyCharacterChecks || []).filter(v => v.week_label === week && v.is_completed !== false);
+}
+function getCharacterWeeklyCheck(characterId, checkKey) {
+  return getWeekCharacterChecks().find(v => v.character_id === characterId && v.check_key === checkKey) || null;
+}
+function renderCharacterExtraCheckButton(characterId, checkKey, label) {
+  const checked = !!getCharacterWeeklyCheck(characterId, checkKey);
+  return `
+    <label class="gold-extra-check ${checked ? 'done' : ''}">
+      <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleCharacterWeeklyCheckFromCheckbox(this,'${characterId}','${checkKey}')">
+      <span>${escapeGoldHtml(label)}</span>
+    </label>
+  `;
+}
 function getSelectedGoldCharacters() {
   const selectedPlayerId = state.currentGoldPlayerFilter || '';
   if (!selectedPlayerId) return [];
@@ -3450,6 +3490,10 @@ function renderGoldCharacterCards() {
             <div class="gold-character-name">${escapeGoldHtml(ch.name)}</div>
             <div class="gold-character-meta">${escapeGoldHtml(job?.name || '직업 미지정')} · Lv.${ch.level ?? '-'}${player?.name ? ` · ${escapeGoldHtml(player.name)}` : ''}</div>
           </div>
+          <div class="gold-extra-checks">
+            ${renderCharacterExtraCheckButton(ch.id, 'bloodstone', '혈석교환')}
+            ${renderCharacterExtraCheckButton(ch.id, 'solo', '싱글교환')}
+          </div>
           <div class="gold-progress">
             <span class="gold-progress-pill ${doneClass}">골드 ${goldCount}/3</span>
           </div>
@@ -3623,6 +3667,46 @@ async function clearCharacterRaidReward(characterId, raidId) {
   await dbDelete('weekly_raid_rewards', { id: found.id });
   await reloadAndRender();
 }
+
+async function upsertWeeklyCharacterCheck(payload) {
+  try {
+    const { data, error } = await supabaseClient.from('weekly_character_checks').upsert(payload, { onConflict:'week_label,character_id,check_key' }).select();
+    if (error) throw error;
+    return data;
+  } catch(e) {
+    console.error(e);
+    showToast('교환 체크 저장 실패: SQL 확장 적용 여부를 확인해주세요.', 'error');
+    return null;
+  }
+}
+function setGoldExtraCheckLoading(input) {
+  if (!input || input.disabled) return false;
+  input.disabled = true;
+  input.closest('.gold-extra-check')?.classList.add('saving');
+  return true;
+}
+async function toggleCharacterWeeklyCheckFromCheckbox(input, characterId, checkKey) {
+  const shouldComplete = !!input.checked;
+  if (!setGoldExtraCheckLoading(input)) return;
+  if (shouldComplete) await setCharacterWeeklyCheck(characterId, checkKey);
+  else await clearCharacterWeeklyCheck(characterId, checkKey);
+}
+async function setCharacterWeeklyCheck(characterId, checkKey) {
+  const inserted = await upsertWeeklyCharacterCheck({
+    week_label:getGoldWeekLabel(),
+    character_id:characterId,
+    check_key:checkKey,
+    is_completed:true,
+    completed_at:new Date().toISOString()
+  });
+  if (inserted) await reloadAndRender();
+}
+async function clearCharacterWeeklyCheck(characterId, checkKey) {
+  const found = getCharacterWeeklyCheck(characterId, checkKey);
+  if (!found) return await reloadAndRender();
+  await dbDelete('weekly_character_checks', { id: found.id });
+  await reloadAndRender();
+}
 async function applyScheduleRewardsFromSlot(slotId) {
   const slot = state.scheduleSlots.find(v => v.id === slotId);
   if (!slot) return;
@@ -3656,11 +3740,15 @@ async function clearScheduleRewards(slotId) {
 async function resetWeeklyRewards() {
   const chars = getSelectedGoldCharacters();
   const charIds = new Set(chars.map(ch => ch.id));
-  const targets = getWeekRewards().filter(v => charIds.has(v.character_id));
-  if (!targets.length) return showToast('초기화할 체크 내역이 없습니다.', 'info');
+  const rewardTargets = getWeekRewards().filter(v => charIds.has(v.character_id));
+  const checkTargets = getWeekCharacterChecks().filter(v => charIds.has(v.character_id));
+  const total = rewardTargets.length + checkTargets.length;
+  if (!total) return showToast('초기화할 체크 내역이 없습니다.', 'info');
   const label = getPlayer(state.currentGoldPlayerFilter)?.name || '선택 유저';
-  if (!(await appConfirm(`${label} 체크 ${targets.length}개를 초기화할까요?\n스케줄/파티/캐릭터 데이터는 삭제되지 않습니다.`))) return;
-  for (const r of targets) await dbDelete('weekly_raid_rewards', { id: r.id });
+  if (!(await appConfirm(`${label} 체크 ${total}개를 초기화할까요?
+스케줄/파티/캐릭터 데이터는 삭제되지 않습니다.`))) return;
+  for (const r of rewardTargets) await dbDelete('weekly_raid_rewards', { id: r.id });
+  for (const c of checkTargets) await dbDelete('weekly_character_checks', { id: c.id });
   await reloadAndRender();
   showToast('이번 주 체크를 초기화했습니다.');
 }
@@ -3706,6 +3794,7 @@ async function deleteScheduleFromDetail() {
 
   const attends = state.attendance.filter(v => v.schedule_slot_id === slotId);
   for (const a of attends) await dbDelete('attendance', { id: a.id });
+  await clearScheduleRewards(slotId);
   await dbDelete('schedule_slots', { id: slotId });
 
   closeModal('detailModal');
@@ -3948,6 +4037,15 @@ async function subscribeRealtime() {
       table: 'weekly_raid_rewards'
     }, (payload) => {
       console.log('REALTIME weekly_raid_rewards:', payload);
+      scheduleRealtimeReload('');
+    })
+
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'weekly_character_checks'
+    }, (payload) => {
+      console.log('REALTIME weekly_character_checks:', payload);
       scheduleRealtimeReload('');
     })
 
