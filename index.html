@@ -322,7 +322,31 @@ a{text-decoration:none;color:inherit}
   box-shadow:0 8px 18px rgba(15,23,42,.12);cursor:grab;user-select:none
 }
 .event-block:active{cursor:grabbing}
+.event-block.saving{
+  cursor:wait !important;
+  opacity:.72;
+  pointer-events:auto;
+}
+.event-block.saving::after{
+  content:'저장중';
+  position:absolute;right:6px;bottom:5px;
+  padding:2px 6px;border-radius:999px;
+  background:rgba(255,255,255,.88);color:#64748b;
+  font-size:9px;font-weight:900;line-height:1.35;
+  box-shadow:0 1px 3px rgba(15,23,42,.10);
+  z-index:5;
+}
 .event-block.has-absent{outline:2px solid rgba(255,255,255,.75)}
+.event-block.has-overlap{padding-right:34px}
+.overlap-badge{
+  position:absolute;right:6px;top:50%;transform:translateY(-50%);
+  width:22px;height:22px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:#ef4444;color:#fff;border:2px solid rgba(255,255,255,.9);
+  font-size:13px;font-weight:950;line-height:1;
+  box-shadow:0 2px 6px rgba(15,23,42,.18);
+  z-index:4;pointer-events:none;
+}
 .event-block.completed{
   background:#e5e7eb !important;
   color:#6b7280 !important;
@@ -714,11 +738,11 @@ a{text-decoration:none;color:inherit}
 }
 .gold-progress-text{color:#475569}
 .gold-raid-list{display:flex;flex-direction:column;gap:6px;margin-top:12px}
-.gold-raid-row{display:grid;grid-template-columns:minmax(220px,1fr) 98px auto;align-items:center;gap:12px;min-height:42px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.82);border:1px solid #e5eaf1}
+.gold-raid-row{display:grid;grid-template-columns:minmax(0,1fr) max-content auto;align-items:center;gap:8px;min-height:42px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.82);border:1px solid #e5eaf1}
 .gold-raid-row.done{background:#f7fafc;color:#64748b;border-color:#d8dde3}
 .gold-raid-row.material{background:#f7fafc;color:#64748b;border-color:#d8dde3}
 .gold-raid-row.out{opacity:.62}
-.gold-raid-main{display:flex;align-items:center;gap:12px;min-width:0;flex-wrap:wrap}
+.gold-raid-main{display:flex;align-items:center;gap:10px;min-width:0;flex-wrap:wrap}
 .gold-raid-title{font-size:13px;font-weight:950;color:#111827;white-space:nowrap;min-width:126px}
 .gold-raid-row.done .gold-raid-title{color:#64748b}
 .gold-raid-schedule{font-size:12px;font-weight:850;color:#2563eb;white-space:nowrap}
@@ -752,7 +776,7 @@ a{text-decoration:none;color:inherit}
 @media (max-width:900px){.gold-raid-setting-row{grid-template-columns:1fr 1fr}.gold-raid-setting-name{grid-column:1 / -1}.gold-raid-setting-total{align-self:center;text-align:left}.gold-raid-setting-row .btn{justify-self:start}}
 .gold-schedule-list,.gold-week-history{display:none}
 .gold-week-chip,.gold-schedule-chip{display:none}
-@media (max-width:1180px){.gold-rate-layout{grid-template-columns:1fr}.gold-raid-row{grid-template-columns:minmax(180px,1fr) 90px auto}}
+@media (max-width:1180px){.gold-rate-layout{grid-template-columns:1fr}.gold-raid-row{grid-template-columns:minmax(0,1fr) max-content auto;gap:8px}}
 @media (max-width:820px){.gold-control-main{min-width:100%;flex-wrap:wrap}.gold-control-line .gold-search-input{max-width:none}.gold-summary-line{gap:8px}.gold-summary-line span{margin-right:10px;padding-right:10px}.gold-character-head{flex-direction:column}.gold-progress{justify-content:flex-start}.gold-raid-row{grid-template-columns:1fr}.gold-raid-reward{text-align:left}.gold-raid-actions{justify-content:flex-start}.gold-calc-grid{grid-template-columns:1fr}}
 
 /* 캐릭터 골드체크: 카드형 2열 정리 */
@@ -1435,6 +1459,44 @@ let realtimeReloadPending = false;
 let realtimeStatus = 'CLOSED';
 let suppressRealtimeUntil = 0;
 
+// 스케줄 카드 드래그/리사이즈 저장이 겹치지 않도록 별도 잠금 관리
+let scheduleInteractionDepth = 0;
+let scheduleRenderPending = false;
+const scheduleMutationLocks = new Set();
+let currentDragSession = null;
+let dragSessionSeq = 0;
+
+function beginScheduleInteraction() {
+  scheduleInteractionDepth += 1;
+  suppressRealtime(30000);
+}
+function requestScheduleRender() {
+  if (scheduleInteractionDepth > 0 || resizeState?.slotId || currentDragSession) {
+    scheduleRenderPending = true;
+    return;
+  }
+  scheduleRenderPending = false;
+  renderScheduleBoards();
+  renderAssignedPartyPanel();
+}
+function endScheduleInteraction() {
+  scheduleInteractionDepth = Math.max(0, scheduleInteractionDepth - 1);
+  if (scheduleInteractionDepth > 0) {
+    suppressRealtime(30000);
+    return;
+  }
+
+  if (scheduleRenderPending) {
+    scheduleRenderPending = false;
+    renderScheduleBoards();
+    renderAssignedPartyPanel();
+  }
+  releaseRealtimeSuppression();
+}
+function isScheduleMutationLocked(slotId) {
+  return scheduleMutationLocks.has(slotId);
+}
+
 function suppressRealtime(ms = 900) {
   suppressRealtimeUntil = Math.max(suppressRealtimeUntil, Date.now() + ms);
   clearTimeout(realtimeResumeTimer);
@@ -1447,6 +1509,10 @@ function suppressRealtime(ms = 900) {
   }, Math.max(40, ms + 20));
 }
 function releaseRealtimeSuppression() {
+  if (scheduleInteractionDepth > 0) {
+    suppressRealtimeUntil = Math.max(suppressRealtimeUntil, Date.now() + 30000);
+    return;
+  }
   suppressRealtimeUntil = 0;
   clearTimeout(realtimeResumeTimer);
   realtimeResumeTimer = null;
@@ -2051,6 +2117,37 @@ function getSlotHeight(startTime, endTime) {
   return getDurationSlots(startTime, endTime) * SLOT_HEIGHT;
 }
 
+function doScheduleSlotsOverlap(a, b) {
+  if (!a || !b || a.id === b.id) return false;
+
+  let aStart = timeToMinutes(a.start_time);
+  let aEnd = timeToMinutes(a.end_time);
+  let bStart = timeToMinutes(b.start_time);
+  let bEnd = timeToMinutes(b.end_time);
+
+  if (aEnd <= aStart) aEnd += 1440;
+  if (bEnd <= bStart) bEnd += 1440;
+
+  return aStart < bEnd && bStart < aEnd;
+}
+
+function getOverlappingScheduleSlotIds(boardId, day) {
+  const slots = state.scheduleSlots.filter(
+    s => (s.board_id || 'board-1') === boardId && s.day_of_week === day
+  );
+  const overlapped = new Set();
+
+  for (let i = 0; i < slots.length; i++) {
+    for (let j = i + 1; j < slots.length; j++) {
+      if (doScheduleSlotsOverlap(slots[i], slots[j])) {
+        overlapped.add(slots[i].id);
+        overlapped.add(slots[j].id);
+      }
+    }
+  }
+  return overlapped;
+}
+
 function renderScheduleBoards() {
   const wrap = document.getElementById('scheduleBoardsWrap');
   wrap.innerHTML = state.scheduleBoards.map(board => {
@@ -2130,6 +2227,7 @@ function renderSingleScheduleBoard(boardId) {
     const daySlots = state.scheduleSlots.filter(
       s => (s.board_id || 'board-1') === boardId && s.day_of_week === day
     );
+    const overlappingSlotIds = getOverlappingScheduleSlotIds(boardId, day);
 
     html += `<div class="day-col ${today === day ? 'today-col' : ''}" style="height:${totalHeight}px">`;
     html += sorted.map(time => {
@@ -2172,9 +2270,9 @@ function renderSingleScheduleBoard(boardId) {
       const badgeTextColor = isLightColor(color) ? '#111827' : '#ffffff';
 
       html += `
-        <div class="event-block ${isEmptyTime ? 'empty-time' : ''} ${slot.is_completed ? 'completed' : ''} ${absentCount > 0 ? 'has-absent' : ''} ${isCompact ? 'compact' : ''}"
+        <div class="event-block ${isEmptyTime ? 'empty-time' : ''} ${slot.is_completed ? 'completed' : ''} ${absentCount > 0 ? 'has-absent' : ''} ${overlappingSlotIds.has(slot.id) ? 'has-overlap' : ''} ${isScheduleMutationLocked(slot.id) ? 'saving' : ''} ${isCompact ? 'compact' : ''}"
           data-slot-id="${slot.id}"
-          draggable="true"
+          draggable="${isScheduleMutationLocked(slot.id) ? 'false' : 'true'}"
           ondragstart="onScheduleDragStart(event, '${slot.id}')"
           onmousemove="handleScheduleResizeHover(event, this)"
           onmouseleave="clearScheduleResizeHover(this)"
@@ -2188,6 +2286,7 @@ function renderSingleScheduleBoard(boardId) {
           </div>
       
           ${absentCount > 0 ? `<div class="event-badge" style="background:${badgeBgColor};color:${badgeTextColor}">🚫${absentCount}</div>` : ''}
+          ${overlappingSlotIds.has(slot.id) ? `<div class="overlap-badge" title="같은 시간대에 겹친 일정이 있습니다">!</div>` : ''}
           ${slot.is_completed ? `<div class="complete-badge">완</div>` : ''}
         </div>
       `;
@@ -2259,12 +2358,14 @@ function startResizeSchedule(event, slotId, mode) {
   event.stopPropagation();
   event.preventDefault();
 
+  if (isScheduleMutationLocked(slotId)) return;
+
   const slot = state.scheduleSlots.find(v => v.id === slotId);
   if (!slot) return;
 
   // 드래그/리사이즈 중 원격 렌더링이 DOM을 갈아치우지 않도록 잠시 보류하되,
   // 들어온 Realtime 이벤트는 버리지 않고 종료 즉시 처리합니다.
-  suppressRealtime(30000);
+  beginScheduleInteraction();
 
   const { startAdj, endAdj } = getAdjustedRangeFromSlot(slot);
   const sortedAdj = getSortedTimeSlots().map(getAdjustedMinutes);
@@ -2331,35 +2432,44 @@ async function endResizeSchedule() {
   document.body.style.userSelect = '';
   document.body.style.cursor = '';
 
-  if (!resizeState.slotId) return;
+  const slotId = resizeState.slotId;
+  if (!slotId) return;
 
-  const slot = state.scheduleSlots.find(v => v.id === resizeState.slotId);
-  if (slot) {
-    await dbUpdateScheduleIfUnchanged(
-      slot.id,
-      resizeState.originUpdatedAt,
-      {
-        start_time: normalizeTime(slot.start_time),
-        end_time: normalizeTime(slot.end_time)
-      },
-      '다른 사용자가 먼저 이 일정 시간을 변경했습니다.'
-    );
+  const expectedVersion = resizeState.originUpdatedAt;
+  const slot = state.scheduleSlots.find(v => v.id === slotId);
+  if (slot) scheduleMutationLocks.add(slotId);
+
+  try {
+    if (slot) {
+      await dbUpdateScheduleIfUnchanged(
+        slot.id,
+        expectedVersion,
+        {
+          start_time: normalizeTime(slot.start_time),
+          end_time: normalizeTime(slot.end_time)
+        },
+        '다른 사용자가 먼저 이 일정 시간을 변경했습니다.'
+      );
+    }
+  } finally {
+    scheduleMutationLocks.delete(slotId);
+
+    resizeState.slotId = null;
+    resizeState.mode = null;
+    resizeState.startY = 0;
+    resizeState.originStartAdj = 0;
+    resizeState.originEndAdj = 0;
+    resizeState.originUpdatedAt = null;
+    resizeState.minAdj = 0;
+    resizeState.maxAdj = 0;
+
+    scheduleRenderPending = true;
+    endScheduleInteraction();
+
+    setTimeout(() => {
+      resizeState.ignoreClick = false;
+    }, 0);
   }
-
-  resizeState.slotId = null;
-  resizeState.mode = null;
-  resizeState.startY = 0;
-  resizeState.originStartAdj = 0;
-  resizeState.originEndAdj = 0;
-  resizeState.originUpdatedAt = null;
-  resizeState.minAdj = 0;
-  resizeState.maxAdj = 0;
-
-  releaseRealtimeSuppression();
-
-  setTimeout(() => {
-    resizeState.ignoreClick = false;
-  }, 0);
 }
 
 async function deleteScheduleBoard(boardId) {
@@ -4154,14 +4264,29 @@ async function removeTimeSlot(time) {
 }
 
 function onScheduleDragStart(e, slotId) {
-  if (resizeState.slotId) {
+  if (resizeState.slotId || isScheduleMutationLocked(slotId)) {
     e.preventDefault();
     return;
   }
+
   const slot = state.scheduleSlots.find(v => v.id === slotId);
+  if (!slot) {
+    e.preventDefault();
+    return;
+  }
+
+  const token = ++dragSessionSeq;
+  currentDragSession = {
+    token,
+    slotId,
+    expectedVersion: slot.updated_at || null,
+    dropClaimed: false
+  };
+
   draggedScheduleId = slotId;
-  draggedScheduleVersion = slot?.updated_at || null;
-  suppressRealtime(30000);
+  draggedScheduleVersion = slot.updated_at || null;
+  beginScheduleInteraction();
+
   e.dataTransfer.setData('text/plain', slotId);
   e.dataTransfer.effectAllowed = 'move';
 }
@@ -4176,22 +4301,23 @@ async function onScheduleDrop(e, boardId, day, startTime) {
   e.preventDefault();
   e.currentTarget.classList.remove('drag-over');
 
-  const slotId = draggedScheduleId || e.dataTransfer.getData('text/plain');
-  const expectedVersion = draggedScheduleVersion;
+  const session = currentDragSession;
+  const slotId = session?.slotId || draggedScheduleId || e.dataTransfer.getData('text/plain');
+  const expectedVersion = session?.expectedVersion ?? draggedScheduleVersion;
+
+  if (session) session.dropClaimed = true;
+  currentDragSession = null;
   draggedScheduleId = null;
   draggedScheduleVersion = null;
+
   const slot = state.scheduleSlots.find(v => v.id === slotId);
   if (!slot) {
-    releaseRealtimeSuppression();
+    endScheduleInteraction();
     return;
   }
 
-  const before = {
-    board_id: slot.board_id || 'board-1',
-    day_of_week: slot.day_of_week,
-    start_time: normalizeTime(slot.start_time),
-    end_time: normalizeTime(slot.end_time)
-  };
+  // 같은 카드는 직전 저장이 끝나기 전 다시 잡지 못하게 잠급니다.
+  scheduleMutationLocks.add(slotId);
 
   let duration = timeToMinutes(normalizeTime(slot.end_time)) - timeToMinutes(normalizeTime(slot.start_time));
   if (duration <= 0) duration += 1440;
@@ -4199,6 +4325,7 @@ async function onScheduleDrop(e, boardId, day, startTime) {
   const newStart = normalizeTime(startTime);
   const newEnd = minutesToTime((timeToMinutes(newStart) + duration) % 1440);
 
+  // 낙하 직후에는 화면을 즉시 이동시키되, 저장 중 표시 + 재드래그 잠금을 같이 렌더링합니다.
   slot.board_id = boardId;
   slot.day_of_week = day;
   slot.start_time = newStart;
@@ -4206,26 +4333,29 @@ async function onScheduleDrop(e, boardId, day, startTime) {
   renderScheduleBoards();
   renderAssignedPartyPanel();
 
-  const result = await dbUpdateScheduleIfUnchanged(
-    slotId,
-    expectedVersion,
-    { board_id: boardId, day_of_week: day, start_time: newStart, end_time: newEnd },
-    '다른 사용자가 먼저 이 일정을 이동했습니다.'
-  );
-
-  if (!result) {
-    Object.assign(slot, before);
-    renderScheduleBoards();
-    renderAssignedPartyPanel();
+  try {
+    await dbUpdateScheduleIfUnchanged(
+      slotId,
+      expectedVersion,
+      { board_id: boardId, day_of_week: day, start_time: newStart, end_time: newEnd },
+      '다른 사용자가 먼저 이 일정을 이동했습니다.'
+    );
+  } finally {
+    scheduleMutationLocks.delete(slotId);
+    scheduleRenderPending = true;
+    endScheduleInteraction();
   }
-
-  releaseRealtimeSuppression();
 }
 
 document.addEventListener('dragend', () => {
-  draggedScheduleId = null;
-  draggedScheduleVersion = null;
-  releaseRealtimeSuppression();
+  // drop이 실행된 경우에는 저장 완료 시 onScheduleDrop의 finally에서 해제합니다.
+  // drop 없이 드래그가 취소된 경우에만 여기서 해제합니다.
+  if (currentDragSession) {
+    currentDragSession = null;
+    draggedScheduleId = null;
+    draggedScheduleVersion = null;
+    endScheduleInteraction();
+  }
   document.querySelectorAll('.slot-hit.drag-over').forEach(el => el.classList.remove('drag-over'));
 });
 document.addEventListener('keydown', (e) => {
@@ -4326,7 +4456,7 @@ function applyRealtimePayload(table, payload) {
 }
 
 function scheduleRealtimeReload(message = '', delay = 90) {
-  if (isRealtimeSuppressed()) {
+  if (isRealtimeSuppressed() || scheduleInteractionDepth > 0 || currentDragSession || resizeState?.slotId) {
     markRealtimeReloadPending();
     return;
   }
