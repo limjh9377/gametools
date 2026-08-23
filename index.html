@@ -743,9 +743,13 @@ a{text-decoration:none;color:inherit}
 .gold-highlight-input{background:#fff7c2 !important;border-color:#facc15 !important;box-shadow:inset 0 0 0 1px rgba(250,204,21,.18)}
 .gold-calc-result{padding:12px;border-radius:13px;background:#f8fafc;border:1px solid var(--line);margin-top:10px}
 .gold-calc-result strong{font-size:18px}
-.gold-raid-setting-row{display:grid;grid-template-columns:1fr 96px auto;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line-soft)}
+.gold-raid-setting-row{display:grid;grid-template-columns:minmax(150px,1fr) 140px 140px 92px auto;gap:8px;align-items:end;padding:10px 0;border-top:1px solid var(--line-soft)}
 .gold-raid-setting-row:first-child{border-top:none}
-.gold-raid-setting-name{font-size:12px;font-weight:800;color:#111827;min-width:0;word-break:keep-all}
+.gold-raid-setting-name{font-size:12px;font-weight:800;color:#111827;min-width:0;word-break:keep-all;align-self:center}
+.gold-raid-setting-field label{display:block;font-size:10px;font-weight:800;color:#94a3b8;margin-bottom:4px}
+.gold-raid-setting-field .form-control{height:36px;padding:7px 9px;font-size:12px}
+.gold-raid-setting-total{font-size:11px;color:#64748b;font-weight:850;white-space:nowrap;padding-bottom:9px;text-align:right}
+@media (max-width:900px){.gold-raid-setting-row{grid-template-columns:1fr 1fr}.gold-raid-setting-name{grid-column:1 / -1}.gold-raid-setting-total{align-self:center;text-align:left}.gold-raid-setting-row .btn{justify-self:start}}
 .gold-schedule-list,.gold-week-history{display:none}
 .gold-week-chip,.gold-schedule-chip{display:none}
 @media (max-width:1180px){.gold-rate-layout{grid-template-columns:1fr}.gold-raid-row{grid-template-columns:minmax(180px,1fr) 90px auto}}
@@ -756,6 +760,10 @@ a{text-decoration:none;color:inherit}
 .gold-summary-card{padding:15px;border-radius:16px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow-sm)}
 .gold-summary-label{font-size:12px;color:var(--sub);font-weight:800;margin-bottom:8px}
 .gold-summary-value{font-size:24px;font-weight:900;color:var(--text)}
+.gold-summary-split{display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:#475569;font-size:12px;font-weight:800;min-height:29px}
+.gold-summary-split span{display:inline-flex;align-items:baseline;gap:5px;white-space:nowrap}
+.gold-summary-split b{font-size:18px;color:#0f172a;font-weight:950}
+.gold-summary-split .divider{width:1px;height:16px;background:#cbd5e1;display:inline-block}
 .gold-summary-sub{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.45}
 .gold-main-stack{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:stretch}
 .gold-main-stack > .gold-empty{grid-column:1 / -1}
@@ -885,7 +893,7 @@ a{text-decoration:none;color:inherit}
 
     <details class="gold-reward-settings">
       <summary>레이드 골드 보상 설정</summary>
-      <div class="gold-reward-help">레이드별 골드를 입력하면 캐릭터별 획득/남은 골드가 합산됩니다.</div>
+      <div class="gold-reward-help">레이드별 거래가능 골드와 캐릭터 귀속 골드를 나눠 입력하면 획득/남은 골드가 각각 합산됩니다.</div>
       <div id="goldRaidRewardSettings"></div>
     </details>
   </div>
@@ -1295,6 +1303,23 @@ a{text-decoration:none;color:inherit}
   </div>
 </div>
 
+
+<div class="modal-overlay" id="zeroGoldRewardModal">
+  <div class="modal sm">
+    <div class="modal-header">
+      <div class="modal-title">골드 보상 확인</div>
+      <button class="close-btn" onclick="resolveZeroGoldRewardChoice(null)">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="app-dialog-message" id="zeroGoldRewardMessage"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="resolveZeroGoldRewardChoice('material')">골드 미획득</button>
+      <button class="btn btn-primary" onclick="resolveZeroGoldRewardChoice('gold')">골드 획득</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="appDialogModal">
   <div class="modal sm">
     <div class="modal-header">
@@ -1388,6 +1413,7 @@ let state = {
   editingRaidId: null,
   editingPartyId: null,
   editingScheduleId: null,
+  editingScheduleVersion: null,
   currentDetailSlotId: null,
 
   currentCharPlayerId: null,
@@ -1399,21 +1425,53 @@ let state = {
 };
 
 let draggedScheduleId = null;
+let draggedScheduleVersion = null;
+
 let realtimeChannel = null;
 let realtimeReloadTimer = null;
+let realtimeResumeTimer = null;
+let realtimeReconnectTimer = null;
+let realtimeReloadPending = false;
+let realtimeStatus = 'CLOSED';
 let suppressRealtimeUntil = 0;
+
 function suppressRealtime(ms = 900) {
-  suppressRealtimeUntil = Date.now() + ms;
+  suppressRealtimeUntil = Math.max(suppressRealtimeUntil, Date.now() + ms);
+  clearTimeout(realtimeResumeTimer);
+  realtimeResumeTimer = setTimeout(() => {
+    if (isRealtimeSuppressed()) {
+      suppressRealtime(Math.max(30, suppressRealtimeUntil - Date.now()));
+      return;
+    }
+    flushPendingRealtimeReload();
+  }, Math.max(40, ms + 20));
+}
+function releaseRealtimeSuppression() {
+  suppressRealtimeUntil = 0;
+  clearTimeout(realtimeResumeTimer);
+  realtimeResumeTimer = null;
+  flushPendingRealtimeReload();
 }
 function isRealtimeSuppressed() {
   return Date.now() < suppressRealtimeUntil;
 }
+function markRealtimeReloadPending() {
+  realtimeReloadPending = true;
+}
+function flushPendingRealtimeReload() {
+  if (isRealtimeSuppressed()) return;
+  if (!realtimeReloadPending) return;
+  realtimeReloadPending = false;
+  scheduleRealtimeReload('', 0);
+}
+
 let resizeState = {
   slotId: null,
   mode: null,
   startY: 0,
   originStartAdj: 0,
   originEndAdj: 0,
+  originUpdatedAt: null,
   minAdj: 0,
   maxAdj: 0,
   ignoreClick: false
@@ -1543,12 +1601,31 @@ async function clearCompletedSchedules(boardId) {
 
   if (!(await appConfirm(`완료 체크된 스케줄 ${targetSlots.length}개를 모두 해제할까요?`))) return;
 
-  for (const slot of targetSlots) {
-    await dbUpdate('schedule_slots', { id: slot.id }, { is_completed: false });
+  let changed = 0;
+  let conflicts = 0;
+  suppressRealtime(30000);
+  try {
+    for (const slot of targetSlots) {
+      const result = await dbUpdateScheduleIfUnchanged(
+        slot.id,
+        slot.updated_at || null,
+        { is_completed: false },
+        '다른 사용자가 먼저 완료 상태를 변경했습니다.'
+      );
+      if (!result) {
+        conflicts += 1;
+        continue;
+      }
+      await clearScheduleRewards(slot.id);
+      changed += 1;
+    }
+  } finally {
+    releaseRealtimeSuppression();
   }
 
   await reloadAndRender();
-  showToast('완료 체크를 모두 해제했습니다.');
+  if (conflicts) showToast(`완료 ${changed}개 해제 · 충돌 ${conflicts}개는 최신 상태를 유지했습니다.`, 'info');
+  else showToast('완료 체크를 모두 해제했습니다.');
 }
 function getRoleIcon(role) {
   return role === 'support'
@@ -1735,6 +1812,62 @@ async function dbUpdate(table, match, values) {
     return null;
   }
 }
+
+async function dbUpdateScheduleIfUnchanged(slotId, expectedUpdatedAt, values, conflictMessage = '다른 사용자가 먼저 이 일정을 변경했습니다.') {
+  if (!isSupabaseConnected) return null;
+  try {
+    let q = supabaseClient.from('schedule_slots').update(values).eq('id', slotId);
+    if (expectedUpdatedAt) q = q.eq('updated_at', expectedUpdatedAt);
+    const { data, error } = await q.select();
+    if (error) throw error;
+
+    if (!data?.length) {
+      showToast(`${conflictMessage} 최신 일정으로 다시 동기화했습니다.`, 'error');
+      await reloadAndRender();
+      return null;
+    }
+
+    const updated = data[0];
+    const idx = state.scheduleSlots.findIndex(v => v.id === slotId);
+    if (idx >= 0) {
+      state.scheduleSlots[idx] = {
+        ...state.scheduleSlots[idx],
+        ...updated,
+        board_id: updated.board_id || 'board-1',
+        is_completed: !!updated.is_completed
+      };
+    }
+    return data;
+  } catch (e) {
+    console.error('schedule optimistic update error', e);
+    showToast(e.message || '일정 수정 실패', 'error');
+    await reloadAndRender();
+    return null;
+  }
+}
+
+async function dbDeleteScheduleIfUnchanged(slotId, expectedUpdatedAt) {
+  if (!isSupabaseConnected) return null;
+  try {
+    let q = supabaseClient.from('schedule_slots').delete().eq('id', slotId);
+    if (expectedUpdatedAt) q = q.eq('updated_at', expectedUpdatedAt);
+    const { data, error } = await q.select();
+    if (error) throw error;
+
+    if (!data?.length) {
+      showToast('다른 사용자가 먼저 이 일정을 변경했습니다. 최신 일정으로 다시 동기화했습니다.', 'error');
+      await reloadAndRender();
+      return null;
+    }
+    return data;
+  } catch (e) {
+    console.error('schedule optimistic delete error', e);
+    showToast(e.message || '일정 삭제 실패', 'error');
+    await reloadAndRender();
+    return null;
+  }
+}
+
 async function dbDelete(table, match) {
   if (!isSupabaseConnected) return false;
   try {
@@ -2129,6 +2262,10 @@ function startResizeSchedule(event, slotId, mode) {
   const slot = state.scheduleSlots.find(v => v.id === slotId);
   if (!slot) return;
 
+  // 드래그/리사이즈 중 원격 렌더링이 DOM을 갈아치우지 않도록 잠시 보류하되,
+  // 들어온 Realtime 이벤트는 버리지 않고 종료 즉시 처리합니다.
+  suppressRealtime(30000);
+
   const { startAdj, endAdj } = getAdjustedRangeFromSlot(slot);
   const sortedAdj = getSortedTimeSlots().map(getAdjustedMinutes);
   const minAdj = sortedAdj[0];
@@ -2139,6 +2276,7 @@ function startResizeSchedule(event, slotId, mode) {
   resizeState.startY = event.clientY;
   resizeState.originStartAdj = startAdj;
   resizeState.originEndAdj = endAdj;
+  resizeState.originUpdatedAt = slot.updated_at || null;
   resizeState.minAdj = minAdj;
   resizeState.maxAdj = maxAdj;
   resizeState.ignoreClick = true;
@@ -2197,12 +2335,15 @@ async function endResizeSchedule() {
 
   const slot = state.scheduleSlots.find(v => v.id === resizeState.slotId);
   if (slot) {
-    suppressRealtime();
-    const result = await dbUpdate('schedule_slots', { id: slot.id }, {
-      start_time: normalizeTime(slot.start_time),
-      end_time: normalizeTime(slot.end_time)
-    });
-    if (!result) await reloadAndRender();
+    await dbUpdateScheduleIfUnchanged(
+      slot.id,
+      resizeState.originUpdatedAt,
+      {
+        start_time: normalizeTime(slot.start_time),
+        end_time: normalizeTime(slot.end_time)
+      },
+      '다른 사용자가 먼저 이 일정 시간을 변경했습니다.'
+    );
   }
 
   resizeState.slotId = null;
@@ -2210,8 +2351,11 @@ async function endResizeSchedule() {
   resizeState.startY = 0;
   resizeState.originStartAdj = 0;
   resizeState.originEndAdj = 0;
+  resizeState.originUpdatedAt = null;
   resizeState.minAdj = 0;
   resizeState.maxAdj = 0;
+
+  releaseRealtimeSuppression();
 
   setTimeout(() => {
     resizeState.ignoreClick = false;
@@ -3078,8 +3222,9 @@ async function saveParty() {
   state.pendingCharacterRemovalMap = {};
   state.assignmentPrompt = null;
   closeModal('partyModal');
-  suppressRealtime(1200);
+  suppressRealtime(180);
   await reloadAndRender();
+  releaseRealtimeSuppression();
 }
 async function deleteParty(id) {
   const used = state.scheduleSlots.some(v => v.party_id === id);
@@ -3121,11 +3266,13 @@ function duplicateParty(partyId) {
 
 function openScheduleModal(slotId = null, presetBoardId = null, presetDay = null, presetStart = null) {
   state.editingScheduleId = slotId;
+  state.editingScheduleVersion = null;
   renderBoardOptions(presetBoardId || state.scheduleBoards[0]?.id || '');
 
   if (slotId) {
     const slot = state.scheduleSlots.find(v => v.id === slotId);
     if (!slot) return;
+    state.editingScheduleVersion = slot.updated_at || null;
     document.getElementById('scheduleModalTitle').textContent = '스케줄 수정';
     renderBoardOptions(slot.board_id || 'board-1');
     
@@ -3180,10 +3327,25 @@ async function saveSchedule() {
   }
 
   const payload = { board_id: boardId, party_id: finalPartyId, day_of_week: day, start_time: start, end_time: end };
-  if (state.editingScheduleId) await dbUpdate('schedule_slots', { id: state.editingScheduleId }, payload);
-  else await dbInsert('schedule_slots', { ...payload, is_completed:false });
+
+  if (state.editingScheduleId) {
+    const result = await dbUpdateScheduleIfUnchanged(
+      state.editingScheduleId,
+      state.editingScheduleVersion,
+      payload,
+      '다른 사용자가 먼저 이 일정을 수정했습니다.'
+    );
+    if (!result) {
+      closeModal('scheduleModal');
+      return;
+    }
+  } else {
+    const inserted = await dbInsert('schedule_slots', { ...payload, is_completed:false });
+    if (!inserted) return;
+  }
 
   closeModal('scheduleModal');
+  state.editingScheduleVersion = null;
   await reloadAndRender();
 }
 
@@ -3279,13 +3441,17 @@ function formatGold(value) {
   return `${Math.round(Number(value || 0)).toLocaleString()}골`;
 }
 function getDefaultWeekLabel() {
+  // 레이드 주간 기준: 수요일 00:00 KST ~ 다음 화요일 23:59 KST
+  // 기존 ISO 주차(월요일 시작)를 그대로 쓰면 월요일마다 체크가 새 주차로 넘어가 보였기 때문에
+  // 날짜를 2일 뒤로 밀어 계산해 수요일에만 주차가 변경되도록 합니다.
   const d = getKstNow();
-  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  const dayNum = date.getUTCDay() || 7;
-  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
-  const weekNo = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
-  return `${date.getUTCFullYear()}-W${String(weekNo).padStart(2,'0')}`;
+  const shifted = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  shifted.setUTCDate(shifted.getUTCDate() - 2);
+  const dayNum = shifted.getUTCDay() || 7;
+  shifted.setUTCDate(shifted.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(shifted.getUTCFullYear(),0,1));
+  const weekNo = Math.ceil((((shifted - yearStart) / 86400000) + 1) / 7);
+  return `${shifted.getUTCFullYear()}-W${String(weekNo).padStart(2,'0')}`;
 }
 function getGoldWeekLabel() {
   return String(state.currentGoldWeekLabel || getDefaultWeekLabel()).trim() || getDefaultWeekLabel();
@@ -3342,10 +3508,34 @@ function getGoldCount(characterId, excludeRaidId = '') {
 function getMaterialCount(characterId) {
   return getWeekRewards().filter(v => v.character_id === characterId && v.reward_type === 'material').length;
 }
-function getCharacterRewardGold(characterId) {
+function getRaidTradeGold(raid) {
+  return Number(raid?.gold_reward || 0);
+}
+function getRaidBoundGold(raid) {
+  return Number(raid?.bound_gold_reward || 0);
+}
+function getRaidTotalGold(raid) {
+  return getRaidTradeGold(raid) + getRaidBoundGold(raid);
+}
+function getRaidRewardCompactText(raid) {
+  const trade = getRaidTradeGold(raid);
+  const bound = getRaidBoundGold(raid);
+  if (!trade && !bound) return '0골';
+  return `거래 ${trade.toLocaleString()} · 귀속 ${bound.toLocaleString()}`;
+}
+function getCharacterRewardGoldSplit(characterId) {
   return getWeekRewards()
     .filter(v => v.character_id === characterId && v.reward_type === 'gold')
-    .reduce((sum, v) => sum + Number(getRaid(v.raid_id)?.gold_reward || 0), 0);
+    .reduce((sum, v) => {
+      const raid = getRaid(v.raid_id);
+      sum.trade += getRaidTradeGold(raid);
+      sum.bound += getRaidBoundGold(raid);
+      return sum;
+    }, { trade:0, bound:0 });
+}
+function getCharacterRewardGold(characterId) {
+  const split = getCharacterRewardGoldSplit(characterId);
+  return split.trade + split.bound;
 }
 function getCharacterScheduleSlots(characterId) {
   const partyIds = new Set(state.partyMembers.filter(m => m.character_id === characterId).map(m => m.party_id));
@@ -3363,11 +3553,11 @@ function getCharacterRaidScheduleSlots(characterId, raidId) {
     return party && party.raid_id === raidId;
   });
 }
-function getCharacterRemainingGold(characterId) {
+function getCharacterRemainingGoldSplit(characterId) {
   let slotsLeft = Math.max(0, 3 - getGoldCount(characterId));
-  if (slotsLeft <= 0) return 0;
+  const total = { trade:0, bound:0 };
+  if (slotsLeft <= 0) return total;
 
-  let total = 0;
   for (const { raid, levelOk } of getActiveGoldRaidsForCharacter({ id: characterId, level: getCharacter(characterId)?.level || 0 })) {
     if (slotsLeft <= 0) break;
     if (!levelOk) continue;
@@ -3375,10 +3565,15 @@ function getCharacterRemainingGold(characterId) {
     if (reward) continue;
     const hasUpcoming = getCharacterRaidScheduleSlots(characterId, raid.id).some(slot => !slot.is_completed);
     if (!hasUpcoming) continue;
-    total += Number(raid.gold_reward || 0);
+    total.trade += getRaidTradeGold(raid);
+    total.bound += getRaidBoundGold(raid);
     slotsLeft -= 1;
   }
   return total;
+}
+function getCharacterRemainingGold(characterId) {
+  const split = getCharacterRemainingGoldSplit(characterId);
+  return split.trade + split.bound;
 }
 function getActiveGoldRaidsForCharacter(ch) {
   const raidIds = [];
@@ -3453,13 +3648,31 @@ function renderGoldSummaryCards() {
   const remainingSlots = Math.max(0, totalGoldSlots - goldDone);
   const currentGold = rewards
     .filter(v => v.reward_type === 'gold')
-    .reduce((sum, reward) => sum + Number(getRaid(reward.raid_id)?.gold_reward || 0), 0);
-  const remainingGold = chars.reduce((sum, ch) => sum + getCharacterRemainingGold(ch.id), 0);
+    .reduce((sum, reward) => {
+      const raid = getRaid(reward.raid_id);
+      sum.trade += getRaidTradeGold(raid);
+      sum.bound += getRaidBoundGold(raid);
+      return sum;
+    }, { trade:0, bound:0 });
+  const remainingGold = chars.reduce((sum, ch) => {
+    const split = getCharacterRemainingGoldSplit(ch.id);
+    sum.trade += split.trade;
+    sum.bound += split.bound;
+    return sum;
+  }, { trade:0, bound:0 });
   wrap.innerHTML = `
     <div class="gold-summary-card"><div class="gold-summary-label">표시 캐릭터</div><div class="gold-summary-value">${chars.length}</div><div class="gold-summary-sub">선택 유저/검색 필터 기준</div></div>
     <div class="gold-summary-card"><div class="gold-summary-label">골드 보상 완료</div><div class="gold-summary-value">${goldDone}/${totalGoldSlots}</div><div class="gold-summary-sub">남은 골드 레이드 ${remainingSlots}개</div></div>
-    <div class="gold-summary-card"><div class="gold-summary-label">현재 획득 골드</div><div class="gold-summary-value">${currentGold.toLocaleString()}골</div><div class="gold-summary-sub">골드 완료 체크 기준</div></div>
-    <div class="gold-summary-card"><div class="gold-summary-label">남은 획득 골드</div><div class="gold-summary-value">${remainingGold.toLocaleString()}골</div><div class="gold-summary-sub">미완료 스케줄 중 받을 수 있는 골드</div></div>
+    <div class="gold-summary-card">
+      <div class="gold-summary-label">현재 획득 골드</div>
+      <div class="gold-summary-split"><span>거래가능 <b>${currentGold.trade.toLocaleString()}</b></span><i class="divider"></i><span>귀속 <b>${currentGold.bound.toLocaleString()}</b></span></div>
+      <div class="gold-summary-sub">골드 완료 체크 기준</div>
+    </div>
+    <div class="gold-summary-card">
+      <div class="gold-summary-label">남은 획득 골드</div>
+      <div class="gold-summary-split"><span>거래가능 <b>${remainingGold.trade.toLocaleString()}</b></span><i class="divider"></i><span>귀속 <b>${remainingGold.bound.toLocaleString()}</b></span></div>
+      <div class="gold-summary-sub">미완료 스케줄 중 받을 수 있는 골드</div>
+    </div>
   `;
 }
 function renderGoldCharacterCards() {
@@ -3514,7 +3727,7 @@ function renderGoldCharacterCards() {
                   <div class="gold-raid-title">${raid.icon ? escapeGoldHtml(raid.icon) : '🛡'} ${escapeGoldHtml(raid.name)}</div>
                   ${scheduleLine}
                 </div>
-                <div class="gold-raid-reward">${reward ? `<span class="gold-reward-status">✅ 골드 ${isGold ? 'O' : 'X'}</span>` : `${Number(raid.gold_reward || 0).toLocaleString()}골`}</div>
+                <div class="gold-raid-reward">${reward ? `<span class="gold-reward-status">✅ 골드 ${isGold ? 'O' : 'X'}</span>` : escapeGoldHtml(getRaidRewardCompactText(raid))}</div>
                 <div class="gold-raid-actions">
                   ${reward
                     ? `<button class="btn btn-ghost" onclick="clearCharacterRaidRewardFromButton(this,'${ch.id}','${raid.id}')">해제</button>`
@@ -3599,18 +3812,35 @@ function renderGoldRaidRewardSettings() {
   wrap.innerHTML = raids.map(raid => `
     <div class="gold-raid-setting-row">
       <div class="gold-raid-setting-name">${escapeGoldHtml(raid.name)}</div>
-      <input type="number" class="form-control" id="raidGold_${raid.id}" value="${Number(raid.gold_reward || 0)}" min="0" step="100">
+      <div class="gold-raid-setting-field">
+        <label>거래가능 골드</label>
+        <input type="number" class="form-control" id="raidGold_${raid.id}" value="${getRaidTradeGold(raid)}" min="0" step="100" oninput="updateRaidGoldTotalPreview('${raid.id}')">
+      </div>
+      <div class="gold-raid-setting-field">
+        <label>캐릭터 귀속 골드</label>
+        <input type="number" class="form-control" id="raidBoundGold_${raid.id}" value="${getRaidBoundGold(raid)}" min="0" step="100" oninput="updateRaidGoldTotalPreview('${raid.id}')">
+      </div>
+      <div class="gold-raid-setting-total" id="raidGoldTotal_${raid.id}">합계 ${getRaidTotalGold(raid).toLocaleString()}골</div>
       <button class="btn btn-ghost btn-sm" onclick="saveRaidGoldReward('${raid.id}')">저장</button>
     </div>
   `).join('');
 }
+function updateRaidGoldTotalPreview(raidId) {
+  const trade = Number(document.getElementById(`raidGold_${raidId}`)?.value || 0);
+  const bound = Number(document.getElementById(`raidBoundGold_${raidId}`)?.value || 0);
+  const el = document.getElementById(`raidGoldTotal_${raidId}`);
+  if (el) el.textContent = `합계 ${(trade + bound).toLocaleString()}골`;
+}
 async function saveRaidGoldReward(raidId) {
-  const input = document.getElementById(`raidGold_${raidId}`);
-  const gold = Number(input?.value || 0);
-  const result = await dbUpdate('raids', { id: raidId }, { gold_reward: gold });
+  const gold = Number(document.getElementById(`raidGold_${raidId}`)?.value || 0);
+  const boundGold = Number(document.getElementById(`raidBoundGold_${raidId}`)?.value || 0);
+  const result = await dbUpdate('raids', { id: raidId }, { gold_reward: gold, bound_gold_reward: boundGold });
   if (result) {
     const raid = getRaid(raidId);
-    if (raid) raid.gold_reward = gold;
+    if (raid) {
+      raid.gold_reward = gold;
+      raid.bound_gold_reward = boundGold;
+    }
     renderGoldCheck();
     showToast('레이드 보상을 저장했습니다.');
   }
@@ -3707,7 +3937,25 @@ async function clearCharacterWeeklyCheck(characterId, checkKey) {
   await dbDelete('weekly_character_checks', { id: found.id });
   await reloadAndRender();
 }
-async function applyScheduleRewardsFromSlot(slotId) {
+let zeroGoldRewardResolver = null;
+function openZeroGoldRewardDialog(raidName) {
+  return new Promise(resolve => {
+    zeroGoldRewardResolver = resolve;
+    const messageEl = document.getElementById('zeroGoldRewardMessage');
+    if (messageEl) {
+      messageEl.textContent = `${raidName || '해당 레이드'}의 설정된 보상이 0골드입니다.\n골드 보상을 획득한 것으로 체크할까요?`;
+    }
+    openModal('zeroGoldRewardModal');
+  });
+}
+function resolveZeroGoldRewardChoice(choice) {
+  const resolver = zeroGoldRewardResolver;
+  zeroGoldRewardResolver = null;
+  closeModal('zeroGoldRewardModal');
+  if (resolver) resolver(choice);
+}
+
+async function applyScheduleRewardsFromSlot(slotId, forcedRewardType = null) {
   const slot = state.scheduleSlots.find(v => v.id === slotId);
   if (!slot) return;
   const party = getParty(slot.party_id);
@@ -3721,7 +3969,10 @@ async function applyScheduleRewardsFromSlot(slotId) {
     const att = state.attendance.find(v => v.schedule_slot_id === slotId && v.player_id === m.player_id);
     if (att?.is_absent) continue;
     const existing = getCharacterReward(m.character_id, raid.id);
-    const rewardType = existing?.reward_type || (getGoldCount(m.character_id, raid.id) < 3 ? 'gold' : 'material');
+    let rewardType = existing?.reward_type || forcedRewardType || (getGoldCount(m.character_id, raid.id) < 3 ? 'gold' : 'material');
+    if (!existing && rewardType === 'gold' && getGoldCount(m.character_id, raid.id) >= 3) {
+      rewardType = 'material';
+    }
     await upsertWeeklyRaidReward({
       week_label:getGoldWeekLabel(),
       character_id:m.character_id,
@@ -3776,9 +4027,43 @@ async function toggleScheduleCompleteFromButton(btn, slotId, isCompleted) {
   await toggleScheduleComplete(slotId, isCompleted);
 }
 async function toggleScheduleComplete(slotId, isCompleted) {
-  await dbUpdate('schedule_slots', { id: slotId }, { is_completed: isCompleted });
-  if (isCompleted) await applyScheduleRewardsFromSlot(slotId);
-  else await clearScheduleRewards(slotId);
+  let forcedRewardType = null;
+
+  if (isCompleted) {
+    const slot = state.scheduleSlots.find(v => v.id === slotId);
+    const party = slot ? getParty(slot.party_id) : null;
+    const raid = party ? getRaid(party.raid_id) : null;
+
+    if (raid && !isEmptyTimeRaid(raid) && getRaidTotalGold(raid) === 0) {
+      forcedRewardType = await openZeroGoldRewardDialog(raid.name);
+      if (!forcedRewardType) {
+        await reloadAndRender();
+        if (state.currentDetailSlotId === slotId) openScheduleDetail(slotId);
+        return;
+      }
+    }
+  }
+
+  const currentSlot = state.scheduleSlots.find(v => v.id === slotId);
+  suppressRealtime(30000);
+  try {
+    const result = await dbUpdateScheduleIfUnchanged(
+      slotId,
+      currentSlot?.updated_at || null,
+      { is_completed: isCompleted },
+      '다른 사용자가 먼저 이 일정의 완료 상태를 변경했습니다.'
+    );
+    if (!result) {
+      if (state.currentDetailSlotId === slotId && state.scheduleSlots.some(v => v.id === slotId)) openScheduleDetail(slotId);
+      return;
+    }
+
+    if (isCompleted) await applyScheduleRewardsFromSlot(slotId, forcedRewardType);
+    else await clearScheduleRewards(slotId);
+  } finally {
+    releaseRealtimeSuppression();
+  }
+
   await reloadAndRender();
   openScheduleDetail(slotId);
 }
@@ -3792,12 +4077,26 @@ async function deleteScheduleFromDetail() {
   if (!(await appConfirm('일정을 삭제할까요?'))) return;
   const slotId = state.currentDetailSlotId;
 
-  const attends = state.attendance.filter(v => v.schedule_slot_id === slotId);
-  for (const a of attends) await dbDelete('attendance', { id: a.id });
-  await clearScheduleRewards(slotId);
-  await dbDelete('schedule_slots', { id: slotId });
+  const slot = state.scheduleSlots.find(v => v.id === slotId);
+  const rewardIds = getWeekRewards()
+    .filter(v => v.schedule_slot_id === slotId)
+    .map(v => v.id);
+
+  suppressRealtime(30000);
+  let deleted = null;
+  try {
+    deleted = await dbDeleteScheduleIfUnchanged(slotId, slot?.updated_at || null);
+    if (!deleted) return;
+
+    // attendance는 FK on delete cascade로 정리되고,
+    // weekly_raid_rewards는 schedule_slot_id가 null이 되기 전에 확보한 id로 정리합니다.
+    for (const rewardId of rewardIds) await dbDelete('weekly_raid_rewards', { id: rewardId });
+  } finally {
+    releaseRealtimeSuppression();
+  }
 
   closeModal('detailModal');
+  state.currentDetailSlotId = null;
   await reloadAndRender();
 }
 async function toggleAttendance(slotId, playerId, isAbsent) {
@@ -3859,7 +4158,10 @@ function onScheduleDragStart(e, slotId) {
     e.preventDefault();
     return;
   }
+  const slot = state.scheduleSlots.find(v => v.id === slotId);
   draggedScheduleId = slotId;
+  draggedScheduleVersion = slot?.updated_at || null;
+  suppressRealtime(30000);
   e.dataTransfer.setData('text/plain', slotId);
   e.dataTransfer.effectAllowed = 'move';
 }
@@ -3875,9 +4177,14 @@ async function onScheduleDrop(e, boardId, day, startTime) {
   e.currentTarget.classList.remove('drag-over');
 
   const slotId = draggedScheduleId || e.dataTransfer.getData('text/plain');
+  const expectedVersion = draggedScheduleVersion;
   draggedScheduleId = null;
+  draggedScheduleVersion = null;
   const slot = state.scheduleSlots.find(v => v.id === slotId);
-  if (!slot) return;
+  if (!slot) {
+    releaseRealtimeSuppression();
+    return;
+  }
 
   const before = {
     board_id: slot.board_id || 'board-1',
@@ -3899,21 +4206,26 @@ async function onScheduleDrop(e, boardId, day, startTime) {
   renderScheduleBoards();
   renderAssignedPartyPanel();
 
-  suppressRealtime();
-  const result = await dbUpdate('schedule_slots', { id: slotId }, {
-    board_id: boardId, day_of_week: day, start_time: newStart, end_time: newEnd
-  });
+  const result = await dbUpdateScheduleIfUnchanged(
+    slotId,
+    expectedVersion,
+    { board_id: boardId, day_of_week: day, start_time: newStart, end_time: newEnd },
+    '다른 사용자가 먼저 이 일정을 이동했습니다.'
+  );
 
   if (!result) {
     Object.assign(slot, before);
     renderScheduleBoards();
     renderAssignedPartyPanel();
-    showToast('일정 이동에 실패해 원래 위치로 되돌렸습니다.', 'error');
   }
+
+  releaseRealtimeSuppression();
 }
 
 document.addEventListener('dragend', () => {
   draggedScheduleId = null;
+  draggedScheduleVersion = null;
+  releaseRealtimeSuppression();
   document.querySelectorAll('.slot-hit.drag-over').forEach(el => el.classList.remove('drag-over'));
 });
 document.addEventListener('keydown', (e) => {
@@ -3924,19 +4236,145 @@ document.addEventListener('keydown', (e) => {
 });
 
 async function reloadAndRender() {
+  const detailModalWasOpen = document.getElementById('detailModal')?.classList.contains('open');
+  const detailSlotId = state.currentDetailSlotId;
+
   await loadAllData();
   renderAll();
+
+  if (detailModalWasOpen && detailSlotId) {
+    if (state.scheduleSlots.some(v => v.id === detailSlotId)) {
+      openScheduleDetail(detailSlotId);
+    } else {
+      closeModal('detailModal');
+      state.currentDetailSlotId = null;
+    }
+  }
 }
 
-function scheduleRealtimeReload(message = '') {
-  if (isRealtimeSuppressed()) return;
+function normalizeRealtimeScheduleRow(row) {
+  if (!row) return row;
+  return {
+    ...row,
+    board_id: row.board_id || 'board-1',
+    is_completed: !!row.is_completed
+  };
+}
+
+function upsertRealtimeArrayRow(arrayName, row, normalizeFn = null) {
+  if (!row?.id) return;
+  const arr = state[arrayName];
+  if (!Array.isArray(arr)) return;
+  const normalized = normalizeFn ? normalizeFn(row) : row;
+  const idx = arr.findIndex(v => v.id === row.id);
+  if (idx >= 0) arr[idx] = { ...arr[idx], ...normalized };
+  else arr.push(normalized);
+}
+
+function deleteRealtimeArrayRow(arrayName, row) {
+  if (!row?.id || !Array.isArray(state[arrayName])) return;
+  state[arrayName] = state[arrayName].filter(v => v.id !== row.id);
+}
+
+function applyRealtimePayload(table, payload) {
+  const type = payload?.eventType;
+  const incoming = type === 'DELETE' ? payload?.old : payload?.new;
+  if (!incoming?.id) return;
+
+  const map = {
+    schedule_slots: ['scheduleSlots', normalizeRealtimeScheduleRow],
+    attendance: ['attendance', null],
+    weekly_raid_rewards: ['weeklyRaidRewards', null],
+    weekly_character_checks: ['weeklyCharacterChecks', null],
+    weekly_player_notes: ['weeklyNotes', null],
+    party_members: ['partyMembers', null],
+    parties: ['parties', null],
+    players: ['players', null],
+    jobs: ['jobs', null],
+    characters: ['characters', null],
+    raids: ['raids', null]
+  };
+
+  const target = map[table];
+  if (!target) return;
+  const [arrayName, normalizeFn] = target;
+
+  if (type === 'DELETE') deleteRealtimeArrayRow(arrayName, incoming);
+  else upsertRealtimeArrayRow(arrayName, incoming, normalizeFn);
+
+  // 일정 이동/완료처럼 사용자가 바로 체감하는 영역은 서버 재조회 전에 먼저 반영합니다.
+  if (table === 'schedule_slots') {
+    renderScheduleBoards();
+    renderAssignedPartyPanel();
+    renderGoldCheck();
+    if (state.currentDetailSlotId === incoming.id && document.getElementById('detailModal')?.classList.contains('open')) {
+      if (type === 'DELETE') {
+        closeModal('detailModal');
+        state.currentDetailSlotId = null;
+      } else {
+        openScheduleDetail(incoming.id);
+      }
+    }
+  } else if (table === 'weekly_raid_rewards' || table === 'weekly_character_checks') {
+    renderGoldCheck();
+  } else if (table === 'attendance') {
+    renderScheduleBoards();
+    if (state.currentDetailSlotId && document.getElementById('detailModal')?.classList.contains('open')) {
+      openScheduleDetail(state.currentDetailSlotId);
+    }
+  }
+}
+
+function scheduleRealtimeReload(message = '', delay = 90) {
+  if (isRealtimeSuppressed()) {
+    markRealtimeReloadPending();
+    return;
+  }
 
   clearTimeout(realtimeReloadTimer);
   realtimeReloadTimer = setTimeout(async () => {
-    if (isRealtimeSuppressed()) return;
+    if (isRealtimeSuppressed()) {
+      markRealtimeReloadPending();
+      return;
+    }
+    realtimeReloadPending = false;
     await reloadAndRender();
     if (message) showToast(message, 'info');
-  }, 350);
+  }, Math.max(0, delay));
+}
+
+function handleRealtimeChange(table, payload) {
+  console.log(`REALTIME ${table}:`, payload);
+
+  if (isRealtimeSuppressed()) {
+    markRealtimeReloadPending();
+    return;
+  }
+
+  // 1차: payload로 화면을 즉시 갱신
+  applyRealtimePayload(table, payload);
+  // 2차: 아주 짧은 간격 뒤 전체 데이터를 다시 읽어 관계 데이터까지 일치시킴
+  scheduleRealtimeReload('', 90);
+}
+
+async function forceRealtimeSync() {
+  if (!isSupabaseConnected || isRealtimeSuppressed()) {
+    markRealtimeReloadPending();
+    return;
+  }
+  clearTimeout(realtimeReloadTimer);
+  realtimeReloadTimer = null;
+  realtimeReloadPending = false;
+  await reloadAndRender();
+}
+
+function scheduleRealtimeReconnect() {
+  if (!isSupabaseConnected) return;
+  clearTimeout(realtimeReconnectTimer);
+  realtimeReconnectTimer = setTimeout(async () => {
+    if (document.visibilityState === 'hidden' || !navigator.onLine) return;
+    await subscribeRealtime();
+  }, 900);
 }
 
 async function subscribeRealtime() {
@@ -3947,134 +4385,85 @@ async function subscribeRealtime() {
     realtimeChannel = null;
   }
 
+  realtimeStatus = 'CONNECTING';
+
   realtimeChannel = supabaseClient
-    .channel('party-scheduler-realtime')
+    .channel('party-scheduler-realtime-v2')
 
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'players'
-    }, (payload) => {
-      console.log('REALTIME players:', payload);
-      scheduleRealtimeReload('');
-    })
+    .on('postgres_changes', { event:'*', schema:'public', table:'players' },
+      payload => handleRealtimeChange('players', payload))
 
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'jobs'
-    }, (payload) => {
-      console.log('REALTIME jobs:', payload);
-      scheduleRealtimeReload('');
-    })
+    .on('postgres_changes', { event:'*', schema:'public', table:'jobs' },
+      payload => handleRealtimeChange('jobs', payload))
 
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'characters'
-    }, (payload) => {
-      console.log('REALTIME characters:', payload);
-      scheduleRealtimeReload('');
-    })
+    .on('postgres_changes', { event:'*', schema:'public', table:'characters' },
+      payload => handleRealtimeChange('characters', payload))
 
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'raids'
-    }, (payload) => {
-      console.log('REALTIME raids:', payload);
-      scheduleRealtimeReload('');
-    })
+    .on('postgres_changes', { event:'*', schema:'public', table:'raids' },
+      payload => handleRealtimeChange('raids', payload))
 
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'parties'
-    }, (payload) => {
-      console.log('REALTIME parties:', payload);
-      scheduleRealtimeReload('');
-    })
+    .on('postgres_changes', { event:'*', schema:'public', table:'parties' },
+      payload => handleRealtimeChange('parties', payload))
 
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'party_members'
-    }, (payload) => {
-      console.log('REALTIME party_members:', payload);
-      scheduleRealtimeReload('');
-    })
+    .on('postgres_changes', { event:'*', schema:'public', table:'party_members' },
+      payload => handleRealtimeChange('party_members', payload))
 
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'schedule_slots'
-    }, (payload) => {
-      console.log('REALTIME schedule_slots:', payload);
-      scheduleRealtimeReload('');
-    })
+    .on('postgres_changes', { event:'*', schema:'public', table:'schedule_slots' },
+      payload => handleRealtimeChange('schedule_slots', payload))
 
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'attendance'
-    }, (payload) => {
-      console.log('REALTIME attendance:', payload);
-      scheduleRealtimeReload('');
-    })
+    .on('postgres_changes', { event:'*', schema:'public', table:'attendance' },
+      payload => handleRealtimeChange('attendance', payload))
 
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'weekly_player_notes'
-    }, (payload) => {
-      console.log('REALTIME weekly_player_notes:', payload);
-      scheduleRealtimeReload('');
-    })
+    .on('postgres_changes', { event:'*', schema:'public', table:'weekly_player_notes' },
+      payload => handleRealtimeChange('weekly_player_notes', payload))
 
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'weekly_raid_rewards'
-    }, (payload) => {
-      console.log('REALTIME weekly_raid_rewards:', payload);
-      scheduleRealtimeReload('');
-    })
+    .on('postgres_changes', { event:'*', schema:'public', table:'weekly_raid_rewards' },
+      payload => handleRealtimeChange('weekly_raid_rewards', payload))
 
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'weekly_character_checks'
-    }, (payload) => {
-      console.log('REALTIME weekly_character_checks:', payload);
-      scheduleRealtimeReload('');
-    })
+    .on('postgres_changes', { event:'*', schema:'public', table:'weekly_character_checks' },
+      payload => handleRealtimeChange('weekly_character_checks', payload))
 
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'gold_rate_settings'
-    }, (payload) => {
-      console.log('REALTIME gold_rate_settings:', payload);
-      scheduleRealtimeReload('');
-    })
+    .on('postgres_changes', { event:'*', schema:'public', table:'gold_rate_settings' },
+      payload => handleRealtimeChange('gold_rate_settings', payload))
 
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'schedule_settings'
-    }, (payload) => {
-      console.log('REALTIME schedule_settings:', payload);
-      scheduleRealtimeReload('');
-    })
+    .on('postgres_changes', { event:'*', schema:'public', table:'schedule_settings' },
+      payload => handleRealtimeChange('schedule_settings', payload))
 
-    .subscribe((status, err) => {
+    .subscribe(async (status, err) => {
+      realtimeStatus = status;
       console.log('Realtime status:', status, err);
+
       if (status === 'SUBSCRIBED') {
-        showToast('실시간 동기화가 연결되었습니다.', 'success');
+        clearTimeout(realtimeReconnectTimer);
+        realtimeReconnectTimer = null;
+        // 재연결 직후 서버 상태를 한 번 확정 동기화합니다.
+        await forceRealtimeSync();
+        return;
+      }
+
+      if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+        scheduleRealtimeReconnect();
       }
     });
 }
-  
+
+// 탭이 백그라운드에 있다가 돌아오거나 네트워크가 복구되면
+// 놓쳤을 수 있는 이벤트를 즉시 서버 기준으로 맞춥니다.
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState !== 'visible') return;
+  if (realtimeStatus !== 'SUBSCRIBED') await subscribeRealtime();
+  else await forceRealtimeSync();
+});
+window.addEventListener('focus', () => {
+  if (document.visibilityState === 'visible') forceRealtimeSync();
+});
+window.addEventListener('online', async () => {
+  await subscribeRealtime();
+});
+window.addEventListener('offline', () => {
+  realtimeStatus = 'OFFLINE';
+});
+
 function sanitizeFileName(name) {
   return String(name || 'schedule')
     .replace(/[\\/:*?"<>|]/g, '_')
